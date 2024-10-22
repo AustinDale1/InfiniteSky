@@ -23,16 +23,41 @@ constexpr int BULLET_INITIAL_SPEED = 823;
 constexpr float SCALE_FACTOR = 100.0;
 constexpr float TIME_STEP = 1.0f / 60.0f;
 
-
 static bool gameOver = false;
 static bool pause = false;
 
+class Plane {
+    public:          
+        Vector2 position;
+        Vector2 velocity; 
+        void CreatePlane(Vector2 startPos)
+        {
+            this->position = startPos;
+        }
+        void DestroyPlane()
+        {
+            
+        }
 
+    Plane() { 
+    }
+};
+Plane myPlane;
 
+static Plane planes[10] = {myPlane};
 static void InitGame(void);   
-static void UpdateGame();   
-static void DrawGame();  
 static void UpdateDrawFrame(); 
+static void UpdateGame();   
+static void UpdatePlane(Plane plane);
+static void DrawGame();  
+
+
+double DegToRad(double x)
+{
+    return ((x * 3.14)/180);
+}
+
+
 int main(void)
 {
 
@@ -58,7 +83,7 @@ int main(void)
 void InitGame(void)
 {
     std::cout << "In init" << '\n';
-
+    myPlane.CreatePlane({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
 }
 
 void UpdateDrawFrame()
@@ -88,10 +113,11 @@ void UpdateGame()
     }
 }
 
-double DegToRad(double x)
+void updatePlane(Plane plane)
 {
-    return ((x * 3.14)/180);
+    
 }
+
 
 
 void DrawGame()
@@ -103,6 +129,8 @@ void DrawGame()
         if (!gameOver)
         {
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, BLUE);
+
+            DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
             
             if (pause) DrawText("GAME PAUSED", SCREEN_WIDTH/2 - MeasureText("GAME PAUSED", 40)/2, SCREEN_HEIGHT/2 - 40, 40, GRAY);
         }
