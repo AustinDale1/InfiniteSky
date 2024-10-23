@@ -30,9 +30,13 @@ class Plane {
     public:          
         Vector2 position;
         Vector2 velocity; 
+        double planeAngle = 0.0f;
         void CreatePlane(Vector2 startPos)
         {
             this->position = startPos;
+            this->velocity.x = 5;
+            this->velocity.y = 0;
+            
         }
         void DestroyPlane()
         {
@@ -47,8 +51,9 @@ Plane myPlane;
 static Plane planes[10] = {myPlane};
 static void InitGame(void);   
 static void UpdateDrawFrame(); 
-static void UpdateGame();   
-static void UpdatePlane(Plane plane);
+static void UpdateGame();  
+static void GetMovement(); 
+static void UpdatePlane(Plane& plane);
 static void DrawGame();  
 
 
@@ -100,6 +105,8 @@ void UpdateGame()
 
         if (!pause)
         {
+            GetMovement();
+            UpdatePlane(myPlane);
         }
     }
     else
@@ -113,9 +120,31 @@ void UpdateGame()
     }
 }
 
-void updatePlane(Plane plane)
+void GetMovement()
 {
-    
+    if (IsKeyDown(KEY_W)) 
+    {
+        myPlane.planeAngle -= .1;
+    }
+    if (IsKeyDown(KEY_A)) 
+    {
+        myPlane.planeAngle -= .1;
+    }
+    if (IsKeyDown(KEY_S)) 
+    {
+        myPlane.planeAngle += .1;
+    }
+    if (IsKeyDown(KEY_D)) 
+    {
+        myPlane.planeAngle += .1;
+    }
+}
+
+
+void UpdatePlane(Plane& plane)
+{
+    plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+    plane.position.y += (sinf(DegToRad(plane.planeAngle)) * plane.velocity.y);
 }
 
 
