@@ -122,29 +122,57 @@ void UpdateGame()
 
 void GetMovement()
 {
+    if(myPlane.planeAngle >= 360)
+    {
+        myPlane.planeAngle = std::fmod(myPlane.planeAngle, 360);
+    }
+    if(myPlane.planeAngle < 0)
+    {
+        myPlane.planeAngle = 360 + myPlane.planeAngle;
+    }
     if (IsKeyDown(KEY_W)) 
     {
-        myPlane.planeAngle -= .1;
+        if(myPlane.planeAngle == 90)
+            std::cout << "90" << '\n';
+        else if(myPlane.planeAngle < 90 || myPlane.planeAngle >= 270)
+            myPlane.planeAngle += 1;
+        else
+           myPlane.planeAngle -= 1; 
     }
     if (IsKeyDown(KEY_A)) 
     {
-        myPlane.planeAngle -= .1;
+        if(myPlane.planeAngle == 180)
+            std::cout << "180" << '\n';
+        else if(myPlane.planeAngle < 180)
+            myPlane.planeAngle += 1;
+        else
+           myPlane.planeAngle -= 1; 
     }
     if (IsKeyDown(KEY_S)) 
     {
-        myPlane.planeAngle += .1;
+        if(myPlane.planeAngle == 270)
+            std::cout << "270" << '\n';
+        else if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
+            myPlane.planeAngle -= 1;
+        else
+           myPlane.planeAngle += 1; 
     }
     if (IsKeyDown(KEY_D)) 
     {
-        myPlane.planeAngle += .1;
+        if(myPlane.planeAngle == 0)
+            std::cout << "0" << '\n';
+        else if(myPlane.planeAngle <= 180)
+            myPlane.planeAngle -= 1;
+        else
+           myPlane.planeAngle += 1; 
     }
 }
 
 
 void UpdatePlane(Plane& plane)
 {
-    plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
-    plane.position.y += (sinf(DegToRad(plane.planeAngle)) * plane.velocity.y);
+    plane.position.x += (sinf(myPlane.planeAngle) * plane.velocity.x);
+    plane.position.y += (cosf(myPlane.planeAngle) * plane.velocity.x);
 }
 
 
@@ -158,6 +186,9 @@ void DrawGame()
         if (!gameOver)
         {
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, BLUE);
+
+            std::string text = "Angle: " + std::to_string(myPlane.planeAngle);
+            DrawText(text.c_str(), 20, 20, 20, BLACK); 
 
             DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
             
