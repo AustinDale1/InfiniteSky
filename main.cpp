@@ -171,8 +171,9 @@ void GetMovement()
 
 void UpdatePlane(Plane& plane)
 {
-    plane.position.x += (sinf(myPlane.planeAngle) * plane.velocity.x);
-    plane.position.y += (cosf(myPlane.planeAngle) * plane.velocity.x);
+    std::cout << "x is +" << (cosf(DegToRad(myPlane.planeAngle)) * plane.velocity.x) << "y is - " << (sinf(DegToRad(myPlane.planeAngle)) * plane.velocity.x) << '\n';
+    plane.position.x += (cosf(DegToRad(myPlane.planeAngle)) * plane.velocity.x);
+    plane.position.y -= (sinf(DegToRad(myPlane.planeAngle)) * plane.velocity.x);
 }
 
 
