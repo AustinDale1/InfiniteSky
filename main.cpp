@@ -26,6 +26,10 @@ constexpr float TIME_STEP = 1.0f / 60.0f;
 static bool gameOver = false;
 static bool pause = false;
 
+Texture2D texture;
+
+
+
 class Plane {
     public:          
         Vector2 position;
@@ -69,7 +73,10 @@ int main(void)
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "if you see this, gimme a job");
 
     InitGame();
-
+    // Image image = LoadImage("Untitled design.png");     // Loaded in CPU memory (RAM)
+    // texture = LoadTextureFromImage(image); 
+    texture = LoadTexture("p51.png");
+    
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
@@ -171,7 +178,6 @@ void GetMovement()
 
 void UpdatePlane(Plane& plane)
 {
-    std::cout << "x is +" << (cosf(DegToRad(myPlane.planeAngle)) * plane.velocity.x) << "y is - " << (sinf(DegToRad(myPlane.planeAngle)) * plane.velocity.x) << '\n';
     plane.position.x += (cosf(DegToRad(myPlane.planeAngle)) * plane.velocity.x);
     plane.position.y -= (sinf(DegToRad(myPlane.planeAngle)) * plane.velocity.x);
 }
@@ -192,6 +198,8 @@ void DrawGame()
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
 
             DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
+
+            DrawTexture(texture, myPlane.position.x, myPlane.position.y, WHITE);
             
             if (pause) DrawText("GAME PAUSED", SCREEN_WIDTH/2 - MeasureText("GAME PAUSED", 40)/2, SCREEN_HEIGHT/2 - 40, 40, GRAY);
         }
