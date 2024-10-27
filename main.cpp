@@ -197,6 +197,30 @@ void DrawGame()
     BeginDrawing();
 
         ClearBackground(RAYWHITE);
+        Rectangle source = {
+            0.0f,                // X position in texture
+            0.0f,                // Y position in texture
+            (float)texture.width,// Width to sample
+            (float)texture.height// Height to sample
+        };
+
+        // Define where to draw it on screen and how big
+        Rectangle dest = {
+            myPlane.position.x, 
+            myPlane.position.y,
+            texture.width * .3f,
+            texture.height * .3f
+            // 400.0f,    // X position on screen
+            // 300.0f,    // Y position on screen
+            // 100.0f,    // Width to draw
+            // 100.0f     // Height to draw
+        };
+
+        // Define origin point (for rotation/scaling)
+        Vector2 origin = {
+            dest.width/2,
+            dest.height/2
+        };
 
         if (!gameOver)
         {
@@ -208,14 +232,22 @@ void DrawGame()
             DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
 
             //DrawTexture(texture, myPlane.position.x, myPlane.position.y, WHITE);
+            // if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
+            //     DrawTextureEx(texture, {myPlane.position.x - 50, myPlane.position.y}, -myPlane.planeAngle, .3, WHITE);  // Draw a Texture2D with extended parameters
+            // else
+            // {           
+            //     //DrawTextureEx(textureFlip, myPlane.position, -myPlane.planeAngle, .3, WHITE);
+            //     //DrawTextureEx(textureFlip2, {myPlane.position.x, myPlane.position.y + 50}, -myPlane.planeAngle, .3, WHITE);
+            //     DrawTextureEx(textureFlip3, {myPlane.position.x - 50, myPlane.position.y}, -myPlane.planeAngle, .3, WHITE);
+            // }
+
             if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
-                DrawTextureEx(texture, myPlane.position, -myPlane.planeAngle, .3, WHITE);  // Draw a Texture2D with extended parameters
+                DrawTexturePro(texture, source, dest, origin, -myPlane.planeAngle, WHITE);  // Draw a Texture2D with extended parameters
             else
             {           
-                //DrawTextureEx(textureFlip, myPlane.position, -myPlane.planeAngle, .3, WHITE);
-                //DrawTextureEx(textureFlip2, {myPlane.position.x, myPlane.position.y + 50}, -myPlane.planeAngle, .3, WHITE);
-                DrawTextureEx(textureFlip3, {myPlane.position.x + 50, myPlane.position.y + 50}, -myPlane.planeAngle, .3, WHITE);
-            }
+                DrawTexturePro(textureFlip3, source, dest, origin, -myPlane.planeAngle, WHITE);
+            }//DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint);
+
 
 
             
