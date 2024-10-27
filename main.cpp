@@ -27,6 +27,10 @@ static bool gameOver = false;
 static bool pause = false;
 
 Texture2D texture;
+Texture2D textureFlip;
+Texture2D textureFlip2;
+Texture2D textureFlip3;
+
 
 
 
@@ -75,7 +79,11 @@ int main(void)
     InitGame();
     // Image image = LoadImage("Untitled design.png");     // Loaded in CPU memory (RAM)
     // texture = LoadTextureFromImage(image); 
-    texture = LoadTexture("p51.png");
+    texture = LoadTexture("pfiddyone2.png");
+    textureFlip = LoadTexture("pfiddyone2flip.png");
+    textureFlip2 = LoadTexture("pfiddyone2flip2.png");
+    textureFlip3 = LoadTexture("pfiddyone2flip3.png");
+
     
     SetTargetFPS(60);
 
@@ -194,12 +202,22 @@ void DrawGame()
         {
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, BLUE);
 
-            std::string text = "Angle: " + std::to_string(myPlane.planeAngle);
+            std::string text = "Angle: -" + std::to_string(myPlane.planeAngle);
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
 
             DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
 
-            DrawTexture(texture, myPlane.position.x, myPlane.position.y, WHITE);
+            //DrawTexture(texture, myPlane.position.x, myPlane.position.y, WHITE);
+            if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
+                DrawTextureEx(texture, myPlane.position, -myPlane.planeAngle, .3, WHITE);  // Draw a Texture2D with extended parameters
+            else
+            {           
+                //DrawTextureEx(textureFlip, myPlane.position, -myPlane.planeAngle, .3, WHITE);
+                //DrawTextureEx(textureFlip2, {myPlane.position.x, myPlane.position.y + 50}, -myPlane.planeAngle, .3, WHITE);
+                DrawTextureEx(textureFlip3, {myPlane.position.x + 50, myPlane.position.y + 50}, -myPlane.planeAngle, .3, WHITE);
+            }
+
+
             
             if (pause) DrawText("GAME PAUSED", SCREEN_WIDTH/2 - MeasureText("GAME PAUSED", 40)/2, SCREEN_HEIGHT/2 - 40, 40, GRAY);
         }
