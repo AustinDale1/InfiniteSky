@@ -8,6 +8,7 @@
 #include <cstdlib> 
 #include <string>
 #include <cmath>
+#include <chrono>  
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -25,6 +26,8 @@ constexpr float TIME_STEP = 1.0f / 60.0f;
 
 static bool gameOver = false;
 static bool pause = false;
+static bool isShooting = false;
+static std::chrono::time_point<std::chrono::system_clock> start, end;
 
 Texture2D texture;
 Texture2D textureFlip;
@@ -181,6 +184,16 @@ void GetMovement()
         else
            myPlane.planeAngle += 1; 
     }
+    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    {
+        isShooting = true;
+        start = std::chrono::system_clock::now();
+    }
+    end = std::chrono::system_clock::now();
+    if( (end-start) > std::chrono::seconds(2))
+    {
+        isShooting = false;
+    }
 }
 
 
@@ -228,7 +241,7 @@ void DrawGame()
 
             std::string text = "Angle: -" + std::to_string(myPlane.planeAngle);
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
-
+            text = "shoot pew pew";
             DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
 
             //DrawTexture(texture, myPlane.position.x, myPlane.position.y, WHITE);
@@ -248,9 +261,11 @@ void DrawGame()
                 DrawTexturePro(textureFlip3, source, dest, origin, -myPlane.planeAngle, WHITE);
             }//DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint);
 
+            if(isShooting)
+            {
+                DrawText(text.c_str(), 200, 20, 20, BLACK); 
 
-
-            
+            }
             if (pause) DrawText("GAME PAUSED", SCREEN_WIDTH/2 - MeasureText("GAME PAUSED", 40)/2, SCREEN_HEIGHT/2 - 40, 40, GRAY);
         }
         else 
