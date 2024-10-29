@@ -57,7 +57,29 @@ class Plane {
     Plane() { 
     }
 };
+
+class EnemyPlane {
+    public:
+        Vector2 position;
+            Vector2 velocity; 
+            double planeAngle = 0.0f;
+            void CreatePlane(Vector2 startPos)
+            {
+                this->position = startPos;
+                this->velocity.x = 5;
+                this->velocity.y = 0;
+                
+            }
+            void DestroyPlane()
+            {
+                
+            }
+    EnemyPlane() { 
+    }
+};
+
 Plane myPlane;
+EnemyPlane plane2;
 
 static Plane planes[10] = {myPlane};
 static void InitGame(void);   
@@ -65,6 +87,7 @@ static void UpdateDrawFrame();
 static void UpdateGame();  
 static void GetMovement(); 
 static void UpdatePlane(Plane& plane);
+static void UpdateEnemyPlane(EnemyPlane& plane);
 static void DrawGame();  
 
 
@@ -107,6 +130,8 @@ void InitGame(void)
 {
     std::cout << "In init" << '\n';
     myPlane.CreatePlane({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
+    plane2.CreatePlane({SCREEN_WIDTH/2, (SCREEN_HEIGHT/2) - 100});
+
 }
 
 void UpdateDrawFrame()
@@ -125,6 +150,7 @@ void UpdateGame()
         {
             GetMovement();
             UpdatePlane(myPlane);
+            UpdateEnemyPlane(plane2);
         }
     }
     else
@@ -203,6 +229,13 @@ void UpdatePlane(Plane& plane)
     plane.position.y -= (sinf(DegToRad(myPlane.planeAngle)) * plane.velocity.x);
 }
 
+void UpdateEnemyPlane(EnemyPlane& plane)
+{
+    plane.planeAngle++;
+    plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+    plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+}
+
 
 
 void DrawGame()
@@ -211,10 +244,10 @@ void DrawGame()
 
         ClearBackground(RAYWHITE);
         Rectangle source = {
-            0.0f,                // X position in texture
-            0.0f,                // Y position in texture
-            (float)texture.width,// Width to sample
-            (float)texture.height// Height to sample
+            0.0f,
+            0.0f,
+            (float)texture.width,
+            (float)texture.height
         };
 
         // Define where to draw it on screen and how big
@@ -223,13 +256,15 @@ void DrawGame()
             myPlane.position.y,
             texture.width * .3f,
             texture.height * .3f
-            // 400.0f,    // X position on screen
-            // 300.0f,    // Y position on screen
-            // 100.0f,    // Width to draw
-            // 100.0f     // Height to draw
         };
 
-        // Define origin point (for rotation/scaling)
+        Rectangle dest2 = {
+            plane2.position.x, 
+            plane2.position.y,
+            texture.width * .3f,
+            texture.height * .3f
+        };
+
         Vector2 origin = {
             dest.width/2,
             dest.height/2
@@ -261,6 +296,12 @@ void DrawGame()
                 DrawTexturePro(textureFlip3, source, dest, origin, -myPlane.planeAngle, WHITE);
             }//DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint);
 
+            if(plane2.planeAngle <= 90 || plane2.planeAngle > 270)
+                DrawTexturePro(texture, source, dest2, origin, -plane2.planeAngle, WHITE);  // Draw a Texture2D with extended parameters
+            else
+            {           
+                DrawTexturePro(textureFlip3, source, dest2, origin, -plane2.planeAngle, WHITE);
+            }
             if(isShooting)
             {
                 DrawText(text.c_str(), 200, 20, 20, BLACK); 

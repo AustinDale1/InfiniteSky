@@ -1,5 +1,4 @@
-
-INfinite sky, basically shoot other planes down, fuel maybe goes down, speed can be modified using up and down arrow keys
-steer and shoot with mouse
-start wth machine gun, maybe missiles (missiles are gonna be hard) are in other planes after you stay alive long enough
-Could do upgrades in each game maybe.
+-Machine Gun
+-Enemy Plane
+-Camera Logic
+-
