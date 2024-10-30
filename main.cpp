@@ -179,36 +179,36 @@ void GetMovement()
         if(myPlane.planeAngle == 90)
             std::cout << "90" << '\n';
         else if(myPlane.planeAngle < 90 || myPlane.planeAngle >= 270)
-            myPlane.planeAngle += 1;
+            myPlane.planeAngle += 3;
         else
-           myPlane.planeAngle -= 1; 
+           myPlane.planeAngle -= 3; 
     }
     if (IsKeyDown(KEY_A)) 
     {
         if(myPlane.planeAngle == 180)
             std::cout << "180" << '\n';
         else if(myPlane.planeAngle < 180)
-            myPlane.planeAngle += 1;
+            myPlane.planeAngle += 3;
         else
-           myPlane.planeAngle -= 1; 
+           myPlane.planeAngle -= 3; 
     }
     if (IsKeyDown(KEY_S)) 
     {
         if(myPlane.planeAngle == 270)
             std::cout << "270" << '\n';
         else if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
-            myPlane.planeAngle -= 1;
+            myPlane.planeAngle -= 3;
         else
-           myPlane.planeAngle += 1; 
+           myPlane.planeAngle += 3; 
     }
     if (IsKeyDown(KEY_D)) 
     {
         if(myPlane.planeAngle == 0)
             std::cout << "0" << '\n';
         else if(myPlane.planeAngle <= 180)
-            myPlane.planeAngle -= 1;
+            myPlane.planeAngle -= 3;
         else
-           myPlane.planeAngle += 1; 
+           myPlane.planeAngle += 3; 
     }
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
@@ -229,11 +229,21 @@ void UpdatePlane(Plane& plane)
     plane.position.y -= (sinf(DegToRad(myPlane.planeAngle)) * plane.velocity.x);
 }
 
+double angle = 0;
+
 void UpdateEnemyPlane(EnemyPlane& plane)
 {
-    plane.planeAngle++;
-    plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
-    plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+    angle = atanf((myPlane.position.x - plane.position.x)/(-myPlane.position.y + plane.position.y));
+    angle = (angle * 180)/3.14;
+    if(angle > plane.planeAngle)
+    {
+        plane.planeAngle += 2;
+    } else if(angle < plane.planeAngle)
+    {
+        plane.planeAngle -= 2;
+    }
+    // plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+    // plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
 }
 
 
@@ -254,15 +264,15 @@ void DrawGame()
         Rectangle dest = {
             myPlane.position.x, 
             myPlane.position.y,
-            texture.width * .3f,
-            texture.height * .3f
+            texture.width * .1f,
+            texture.height * .1f
         };
 
         Rectangle dest2 = {
             plane2.position.x, 
             plane2.position.y,
-            texture.width * .3f,
-            texture.height * .3f
+            texture.width * .1f,
+            texture.height * .1f
         };
 
         Vector2 origin = {
@@ -277,7 +287,7 @@ void DrawGame()
             std::string text = "Angle: -" + std::to_string(myPlane.planeAngle);
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
             text = "shoot pew pew";
-            DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
+            //DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
 
             //DrawTexture(texture, myPlane.position.x, myPlane.position.y, WHITE);
             // if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
@@ -308,6 +318,11 @@ void DrawGame()
 
             }
             if (pause) DrawText("GAME PAUSED", SCREEN_WIDTH/2 - MeasureText("GAME PAUSED", 40)/2, SCREEN_HEIGHT/2 - 40, 40, GRAY);
+            text = std::to_string(angle);
+            DrawText(text.c_str(), 400, 20, 20, BLACK); 
+            text = std::to_string(myPlane.planeAngle);
+            DrawText(text.c_str(), 600, 20, 20, BLACK); 
+
         }
         else 
         {
