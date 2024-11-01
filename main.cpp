@@ -235,6 +235,35 @@ void UpdateEnemyPlane(EnemyPlane& plane)
 {
     angle = atanf((myPlane.position.x - plane.position.x)/(-myPlane.position.y + plane.position.y));
     angle = (angle * 180)/3.14;
+    if(myPlane.position.x - plane.position.x > 0)
+    {
+        if(-myPlane.position.y + plane.position.y >= 0)
+        {
+            angle = 90 - angle;
+        } else if(-myPlane.position.y + plane.position.y < 0)
+        {
+            angle = -(-270 + angle);
+        } 
+    } else if(myPlane.position.x - plane.position.x < 0)
+    {
+        if(-myPlane.position.y + plane.position.y > 0)
+        {
+            angle = -(-90 + angle);
+        } else if(-myPlane.position.y + plane.position.y < 0)
+        {
+            angle = 270 - angle;
+        } else{
+            
+        }
+    } else{
+        if(-myPlane.position.y + plane.position.y > 0)
+        {
+            angle = 90;
+        } else
+        {
+            angle = 270;
+        }
+    }
     if(angle > plane.planeAngle)
     {
         plane.planeAngle += 2;
@@ -242,8 +271,8 @@ void UpdateEnemyPlane(EnemyPlane& plane)
     {
         plane.planeAngle -= 2;
     }
-    // plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
-    // plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+    plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+    plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
 }
 
 
@@ -307,10 +336,10 @@ void DrawGame()
             }//DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint);
 
             if(plane2.planeAngle <= 90 || plane2.planeAngle > 270)
-                DrawTexturePro(texture, source, dest2, origin, -plane2.planeAngle, WHITE);  // Draw a Texture2D with extended parameters
+                DrawTexturePro(texture, source, dest2, origin, -plane2.planeAngle, PINK);  // Draw a Texture2D with extended parameters
             else
             {           
-                DrawTexturePro(textureFlip3, source, dest2, origin, -plane2.planeAngle, WHITE);
+                DrawTexturePro(textureFlip3, source, dest2, origin, -plane2.planeAngle, PINK);
             }
             if(isShooting)
             {
