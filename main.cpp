@@ -9,6 +9,7 @@
 #include <string>
 #include <cmath>
 #include <chrono>  
+#include <vector>
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -58,6 +59,17 @@ class Plane {
     }
 };
 
+class Bullet {
+   public:  
+        Vector2 position;        
+        double angle = 0.0f;
+        bool isDone = false;
+    Bullet(Vector2 pos, double planeAngle) {
+        position = pos;
+        angle = planeAngle;
+    } 
+};
+
 class EnemyPlane {
     public:
         Vector2 position;
@@ -80,6 +92,7 @@ class EnemyPlane {
 
 Plane myPlane;
 EnemyPlane plane2;
+static std::vector<Bullet> bulletsInAir;
 
 static Plane planes[10] = {myPlane};
 static void InitGame(void);   
@@ -151,6 +164,23 @@ void UpdateGame()
             GetMovement();
             UpdatePlane(myPlane);
             UpdateEnemyPlane(plane2);
+            int i = 0;
+            for (Bullet& bullet : bulletsInAir) {
+                if(!bullet.isDone)
+                {
+                    std::cout << bullet.angle << " ok " << bullet.position.x << '\n';
+                    if(bullet.position.x > SCREEN_WIDTH || bullet.position.x < 0 || bullet.position.y > SCREEN_HEIGHT || bullet.position.y < 0)
+                    {
+                        bullet.isDone = true;
+                    }
+                    bullet.position.x += (cosf(DegToRad(bullet.angle)) * 8);
+                    bullet.position.y -= (sinf(DegToRad(bullet.angle)) * 8);
+                } else
+                {
+                    bulletsInAir.erase(bulletsInAir.begin() + i);
+                }
+                i++;
+            }
         }
     }
     else
@@ -212,8 +242,13 @@ void GetMovement()
     }
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        isShooting = true;
-        start = std::chrono::system_clock::now();
+        if(!isShooting)
+        {        
+            bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle));
+            std::cout << "What the fweak" << myPlane.planeAngle << '\n';
+            isShooting = true;
+            start = std::chrono::system_clock::now();
+        }
     }
     end = std::chrono::system_clock::now();
     if( (end-start) > std::chrono::seconds(2))
@@ -314,6 +349,7 @@ void DrawGame()
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, BLUE);
 
             std::string text = "Angle: -" + std::to_string(myPlane.planeAngle);
+
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
             text = "shoot pew pew";
             //DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
@@ -351,7 +387,19 @@ void DrawGame()
             DrawText(text.c_str(), 400, 20, 20, BLACK); 
             text = std::to_string(myPlane.planeAngle);
             DrawText(text.c_str(), 600, 20, 20, BLACK); 
-
+            for (Bullet bullet : bulletsInAir) {
+                if(!bullet.isDone)
+                {
+                    if(CheckCollisionCircleRec(bullet.position, 5.0, dest2))
+                    {
+                        text = "HITTHETARGET";
+                        DrawText(text.c_str(), 200, 200, 20, BLACK);
+                        bullet.isDone = true;
+                        gameOver = true;
+                    }
+                    DrawCircleV(bullet.position, 5.0f, RED);
+                }
+            }
         }
         else 
         {
