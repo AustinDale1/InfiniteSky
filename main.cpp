@@ -75,6 +75,7 @@ class EnemyPlane {
         Vector2 position;
             Vector2 velocity; 
             double planeAngle = 0.0f;
+            bool isCrashed = false;
             void CreatePlane(Vector2 startPos)
             {
                 this->position = startPos;
@@ -168,7 +169,7 @@ void UpdateGame()
             for (Bullet& bullet : bulletsInAir) {
                 if(!bullet.isDone)
                 {
-                    std::cout << bullet.angle << " ok " << bullet.position.x << '\n';
+                    //std::cout << bullet.angle << " ok " << bullet.position.x << '\n';
                     if(bullet.position.x > SCREEN_WIDTH || bullet.position.x < 0 || bullet.position.y > SCREEN_HEIGHT || bullet.position.y < 0)
                     {
                         bullet.isDone = true;
@@ -265,49 +266,57 @@ void UpdatePlane(Plane& plane)
 }
 
 double angle = 0;
-
+double x = 1;
 void UpdateEnemyPlane(EnemyPlane& plane)
 {
-    angle = atanf((myPlane.position.x - plane.position.x)/(-myPlane.position.y + plane.position.y));
-    angle = (angle * 180)/3.14;
-    if(myPlane.position.x - plane.position.x > 0)
-    {
-        if(-myPlane.position.y + plane.position.y >= 0)
+    if(!plane.isCrashed) {
+        angle = atanf((myPlane.position.x - plane.position.x)/(-myPlane.position.y + plane.position.y));
+        angle = (angle * 180)/3.14;
+        if(myPlane.position.x - plane.position.x > 0)
         {
-            angle = 90 - angle;
-        } else if(-myPlane.position.y + plane.position.y < 0)
+            if(-myPlane.position.y + plane.position.y >= 0)
+            {
+                angle = 90 - angle;
+            } else if(-myPlane.position.y + plane.position.y < 0)
+            {
+                angle = -(-270 + angle);
+            } 
+        } else if(myPlane.position.x - plane.position.x < 0)
         {
-            angle = -(-270 + angle);
-        } 
-    } else if(myPlane.position.x - plane.position.x < 0)
-    {
-        if(-myPlane.position.y + plane.position.y > 0)
-        {
-            angle = -(-90 + angle);
-        } else if(-myPlane.position.y + plane.position.y < 0)
-        {
-            angle = 270 - angle;
+            if(-myPlane.position.y + plane.position.y > 0)
+            {
+                angle = -(-90 + angle);
+            } else if(-myPlane.position.y + plane.position.y < 0)
+            {
+                angle = 270 - angle;
+            } else{
+                
+            }
         } else{
-            
+            if(-myPlane.position.y + plane.position.y > 0)
+            {
+                angle = 90;
+            } else
+            {
+                angle = 270;
+            }
         }
-    } else{
-        if(-myPlane.position.y + plane.position.y > 0)
+        if(angle > plane.planeAngle)
         {
-            angle = 90;
-        } else
+            plane.planeAngle += 2;
+        } else if(angle < plane.planeAngle)
         {
-            angle = 270;
+            plane.planeAngle -= 2;
         }
+        plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+        plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
     }
-    if(angle > plane.planeAngle)
-    {
-        plane.planeAngle += 2;
-    } else if(angle < plane.planeAngle)
-    {
-        plane.planeAngle -= 2;
+    else {
+        plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
+        plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * (plane.velocity.x * x));
+        x = x + .01;
+        std::cout << "X is " << x << '\n';
     }
-    plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
-    plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
 }
 
 
@@ -395,7 +404,7 @@ void DrawGame()
                         text = "HITTHETARGET";
                         DrawText(text.c_str(), 200, 200, 20, BLACK);
                         bullet.isDone = true;
-                        gameOver = true;
+                        plane2.isCrashed = true;
                     }
                     DrawCircleV(bullet.position, 5.0f, RED);
                 }
