@@ -94,6 +94,7 @@ class EnemyPlane {
 Plane myPlane;
 EnemyPlane plane2;
 static std::vector<Bullet> bulletsInAir;
+static std::vector<Rectangle> planeImages;
 
 static Plane planes[10] = {myPlane};
 static void InitGame(void);   
