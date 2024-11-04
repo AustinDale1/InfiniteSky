@@ -1,2 +1,2 @@
 # InfiniteSky
-2D Plane game
+2D Plane game, in progress
