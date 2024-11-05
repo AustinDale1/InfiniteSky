@@ -70,6 +70,10 @@ class Bullet {
     } 
 };
 
+static std::vector<Rectangle> planeImages;
+class EnemyPlane;
+static std::vector<EnemyPlane> enemyPlanes;
+
 class EnemyPlane {
     public:
         Vector2 position;
@@ -81,6 +85,14 @@ class EnemyPlane {
                 this->position = startPos;
                 this->velocity.x = 5;
                 this->velocity.y = 0;
+                Rectangle dest2 = {
+                    this->position.x, 
+                    this->position.y,
+                    texture.width * .1f,
+                    texture.height * .1f
+                };
+                std::cout << "On creation " << dest2.width << "\n\n\n\n\n\n\n";
+                planeImages.emplace_back(dest2);
                 
             }
             void DestroyPlane()
@@ -94,7 +106,7 @@ class EnemyPlane {
 Plane myPlane;
 EnemyPlane plane2;
 static std::vector<Bullet> bulletsInAir;
-static std::vector<Rectangle> planeImages;
+
 
 static Plane planes[10] = {myPlane};
 static void InitGame(void);   
@@ -114,16 +126,16 @@ double DegToRad(double x)
 
 int main(void)
 {
-
+    
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "if you see this, gimme a job");
-
-    InitGame();
-    // Image image = LoadImage("Untitled design.png");     // Loaded in CPU memory (RAM)
-    // texture = LoadTextureFromImage(image); 
     texture = LoadTexture("pfiddyone2.png");
     textureFlip = LoadTexture("pfiddyone2flip.png");
     textureFlip2 = LoadTexture("pfiddyone2flip2.png");
     textureFlip3 = LoadTexture("pfiddyone2flip3.png");
+    InitGame();
+    // Image image = LoadImage("Untitled design.png");     // Loaded in CPU memory (RAM)
+    // texture = LoadTextureFromImage(image); 
+
 
     
     SetTargetFPS(60);
@@ -146,6 +158,8 @@ void InitGame(void)
     std::cout << "In init" << '\n';
     myPlane.CreatePlane({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
     plane2.CreatePlane({SCREEN_WIDTH/2, (SCREEN_HEIGHT/2) - 100});
+    enemyPlanes.emplace_back(plane2);
+    
 
 }
 
@@ -165,12 +179,15 @@ void UpdateGame()
         {
             GetMovement();
             UpdatePlane(myPlane);
-            UpdateEnemyPlane(plane2);
+            for(EnemyPlane& ep : enemyPlanes)
+            {
+                UpdateEnemyPlane(ep);
+            }
+            // UpdateEnemyPlane(plane2);
             int i = 0;
             for (Bullet& bullet : bulletsInAir) {
                 if(!bullet.isDone)
                 {
-                    //std::cout << bullet.angle << " ok " << bullet.position.x << '\n';
                     if(bullet.position.x > SCREEN_WIDTH || bullet.position.x < 0 || bullet.position.y > SCREEN_HEIGHT || bullet.position.y < 0)
                     {
                         bullet.isDone = true;
@@ -247,7 +264,6 @@ void GetMovement()
         if(!isShooting)
         {        
             bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle));
-            std::cout << "What the fweak" << myPlane.planeAngle << '\n';
             isShooting = true;
             start = std::chrono::system_clock::now();
         }
@@ -316,7 +332,6 @@ void UpdateEnemyPlane(EnemyPlane& plane)
         plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
         plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * (plane.velocity.x * x));
         x = x + .01;
-        std::cout << "X is " << x << '\n';
     }
 }
 
@@ -342,12 +357,13 @@ void DrawGame()
             texture.height * .1f
         };
 
-        Rectangle dest2 = {
-            plane2.position.x, 
-            plane2.position.y,
-            texture.width * .1f,
-            texture.height * .1f
-        };
+        // Rectangle dest2 = {
+        //     plane2.position.x, 
+        //     plane2.position.y,
+        //     texture.width * .1f,
+        //     texture.height * .1f
+        // };
+
 
         Vector2 origin = {
             dest.width/2,
@@ -380,12 +396,25 @@ void DrawGame()
             {           
                 DrawTexturePro(textureFlip3, source, dest, origin, -myPlane.planeAngle, WHITE);
             }//DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint);
-
-            if(plane2.planeAngle <= 90 || plane2.planeAngle > 270)
-                DrawTexturePro(texture, source, dest2, origin, -plane2.planeAngle, PINK);  // Draw a Texture2D with extended parameters
-            else
-            {           
-                DrawTexturePro(textureFlip3, source, dest2, origin, -plane2.planeAngle, PINK);
+            int x = 0;
+        //             Rectangle dest2 = {
+        //     plane2.position.x, 
+        //     plane2.position.y,
+        //     texture.width * .1f,
+        //     texture.height * .1f
+        // };
+            for(EnemyPlane& ep : enemyPlanes)
+            {
+                planeImages[x].x = ep.position.x;
+                planeImages[x].y = ep.position.y;
+                if(ep.planeAngle <= 90 || ep.planeAngle > 270) {
+                    DrawTexturePro(texture, source, planeImages[x], origin, -ep.planeAngle, PINK);  // Draw a Texture2D with extended parameters
+                }
+                else
+                {           
+                    DrawTexturePro(textureFlip3, source, planeImages[x], origin, -ep.planeAngle, PINK);
+                }
+                x++;
             }
             if(isShooting)
             {
@@ -400,12 +429,17 @@ void DrawGame()
             for (Bullet bullet : bulletsInAir) {
                 if(!bullet.isDone)
                 {
-                    if(CheckCollisionCircleRec(bullet.position, 5.0, dest2))
+                    int y = 0;
+                    for(EnemyPlane& ep : enemyPlanes)
                     {
-                        text = "HITTHETARGET";
-                        DrawText(text.c_str(), 200, 200, 20, BLACK);
-                        bullet.isDone = true;
-                        plane2.isCrashed = true;
+                        if(CheckCollisionCircleRec(bullet.position, 5.0, planeImages[y]))
+                        {
+                            text = "HITTHETARGET";
+                            DrawText(text.c_str(), 200, 200, 20, BLACK);
+                            bullet.isDone = true;
+                            ep.isCrashed = true;
+                        }
+                        y++;
                     }
                     DrawCircleV(bullet.position, 5.0f, RED);
                 }
