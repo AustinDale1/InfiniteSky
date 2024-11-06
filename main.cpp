@@ -53,11 +53,6 @@ class Plane {
             this->velocity.y = 0;
             
         }
-        void DestroyPlane()
-        {
-            
-        }
-
     Plane() { 
     }
 };
@@ -67,6 +62,7 @@ class Bullet {
         Vector2 position;        
         double angle = 0.0f;
         bool isDone = false;
+        
     Bullet(Vector2 pos, double planeAngle) {
         position = pos;
         angle = planeAngle;
@@ -98,10 +94,6 @@ class EnemyPlane {
                 };
                 std::cout << "On creation " << dest2.width << "\n\n\n\n\n\n\n";
                 planeImages.emplace_back(dest2);
-                
-            }
-            void DestroyPlane()
-            {
                 
             }
     EnemyPlane() { 
@@ -499,6 +491,11 @@ void DrawGame()
                             ep.isCrashed = true;
                         }
                         y++;
+                    }
+                    if(CheckCollisionCircleRec(bullet.position, 5.0, dest))
+                    {
+                        gameOver = true;
+                        bullet.isDone = true;
                     }
                     DrawCircleV(bullet.position, 5.0f, RED);
                 }
