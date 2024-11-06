@@ -10,6 +10,7 @@
 #include <cmath>
 #include <chrono>  
 #include <vector>
+#include <thread>
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -28,7 +29,7 @@ constexpr float TIME_STEP = 1.0f / 60.0f;
 static bool gameOver = false;
 static bool pause = false;
 static bool isShooting = false;
-static std::chrono::time_point<std::chrono::system_clock> start, end;
+static std::chrono::time_point<std::chrono::system_clock> start, end, ct;
 
 Texture2D texture;
 Texture2D textureFlip;
@@ -213,6 +214,8 @@ void UpdateGame()
     }
 }
 
+int bulletCount = 0;
+
 void GetMovement()
 {
     if(myPlane.planeAngle >= 360)
@@ -261,12 +264,25 @@ void GetMovement()
     }
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
+        
         if(!isShooting)
         {        
+            bulletCount = 0;
             bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle));
+            bulletCount++;
             isShooting = true;
             start = std::chrono::system_clock::now();
+            ct = std::chrono::system_clock::now();
         }
+        std::cout << "count " << bulletCount <<'\n';
+    }
+    
+    if(isShooting && bulletCount < 4 && ((std::chrono::system_clock::now() - ct) > std::chrono::milliseconds(50)))
+    {
+        std::cout << "in alt" << '\n';
+        bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle));
+        ct = std::chrono::system_clock::now();
+        bulletCount++;
     }
     end = std::chrono::system_clock::now();
     if( (end-start) > std::chrono::seconds(2))
@@ -329,9 +345,20 @@ void UpdateEnemyPlane(EnemyPlane& plane)
         plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
     }
     else {
+        if(plane.planeAngle >= 90 && plane.planeAngle <= 270)
+        {
+            if(plane.planeAngle != 270)
+            {
+                plane.planeAngle++;
+            }
+        } else
+        {
+            plane.planeAngle --;
+        }
         plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
-        plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * (plane.velocity.x * x));
+        plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * (plane.velocity.x));
         x = x + .01;
+
     }
 }
 
