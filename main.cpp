@@ -28,8 +28,7 @@ constexpr float TIME_STEP = 1.0f / 60.0f;
 
 static bool gameOver = false;
 static bool pause = false;
-static bool isShooting = false;
-static std::chrono::time_point<std::chrono::system_clock> start, end, ct;
+
 
 Texture2D texture;
 Texture2D textureFlip;
@@ -44,6 +43,9 @@ class Plane {
         Vector2 position;
         Vector2 velocity; 
         double planeAngle = 0.0f;
+        bool isCrashed = false;
+        bool isShooting = false;
+        std::chrono::time_point<std::chrono::system_clock> start, end, ct;
         void CreatePlane(Vector2 startPos)
         {
             this->position = startPos;
@@ -81,6 +83,8 @@ class EnemyPlane {
             Vector2 velocity; 
             double planeAngle = 0.0f;
             bool isCrashed = false;
+            bool isShooting = false;
+            std::chrono::time_point<std::chrono::system_clock> start, end, ct;
             void CreatePlane(Vector2 startPos)
             {
                 this->position = startPos;
@@ -265,29 +269,29 @@ void GetMovement()
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         
-        if(!isShooting)
+        if(!myPlane.isShooting)
         {        
             bulletCount = 0;
             bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle));
             bulletCount++;
-            isShooting = true;
-            start = std::chrono::system_clock::now();
-            ct = std::chrono::system_clock::now();
+            myPlane.isShooting = true;
+            myPlane.start = std::chrono::system_clock::now();
+            myPlane.ct = std::chrono::system_clock::now();
         }
         std::cout << "count " << bulletCount <<'\n';
     }
     
-    if(isShooting && bulletCount < 4 && ((std::chrono::system_clock::now() - ct) > std::chrono::milliseconds(50)))
+    if(myPlane.isShooting && bulletCount < 4 && ((std::chrono::system_clock::now() - myPlane.ct) > std::chrono::milliseconds(50)))
     {
         std::cout << "in alt" << '\n';
         bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle));
-        ct = std::chrono::system_clock::now();
+        myPlane.ct = std::chrono::system_clock::now();
         bulletCount++;
     }
-    end = std::chrono::system_clock::now();
-    if( (end-start) > std::chrono::seconds(2))
+    myPlane.end = std::chrono::system_clock::now();
+    if( (myPlane.end-myPlane.start) > std::chrono::seconds(2))
     {
-        isShooting = false;
+        myPlane.isShooting = false;
     }
 }
 
@@ -300,6 +304,7 @@ void UpdatePlane(Plane& plane)
 
 double angle = 0;
 double x = 1;
+int bulCount = 0;
 void UpdateEnemyPlane(EnemyPlane& plane)
 {
     if(!plane.isCrashed) {
@@ -360,6 +365,33 @@ void UpdateEnemyPlane(EnemyPlane& plane)
         x = x + .01;
 
     }
+    
+    if(!plane.isShooting)
+    {        
+        if(angle - plane.planeAngle <= 5 && angle - plane.planeAngle >= 0)
+        {
+            bulCount = 0;
+            bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle));
+            bulCount++;
+            plane.isShooting = true;
+            plane.start = std::chrono::system_clock::now();
+            plane.ct = std::chrono::system_clock::now();
+        }
+    }
+   
+    if(plane.isShooting && bulCount < 4 && ((std::chrono::system_clock::now() - plane.ct) > std::chrono::milliseconds(50)))
+    {
+        std::cout << "in alt" << '\n';
+        bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle));
+        plane.ct = std::chrono::system_clock::now();
+        bulCount++;
+    }
+    plane.end = std::chrono::system_clock::now();
+    if( (plane.end-plane.start) > std::chrono::seconds(2))
+    {
+        plane.isShooting = false;
+    }
+
 }
 
 
@@ -443,7 +475,7 @@ void DrawGame()
                 }
                 x++;
             }
-            if(isShooting)
+            if(myPlane.isShooting)
             {
                 DrawText(text.c_str(), 200, 20, 20, BLACK); 
 
