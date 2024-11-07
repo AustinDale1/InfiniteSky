@@ -49,9 +49,10 @@ class Plane {
         bool isShooting = false;
         std::chrono::time_point<std::chrono::system_clock> start, end, ct;
         Rectangle planeImage;
-        std::string name = "john";
-        void CreatePlane(Vector2 startPos)
+        int index;
+        void CreatePlane(Vector2 startPos, int counter)
         {
+            index = counter;
             this->position = startPos;
             this->velocity.x = 5;
             this->velocity.y = 0;
@@ -113,6 +114,7 @@ class Bullet {
 Plane myPlane;
 Plane plane2;
 static std::vector<Bullet> bulletsInAir;
+int counter = 0;
 
 
 static Plane planes[10] = {myPlane};
@@ -142,7 +144,6 @@ int main(void)
     InitGame();
     // Image image = LoadImage("Untitled design.png");     // Loaded in CPU memory (RAM)
     // texture = LoadTextureFromImage(image); 
-    myPlane.name = "ahhhhhhhhh";
 
     
     SetTargetFPS(60);
@@ -163,8 +164,9 @@ int main(void)
 void InitGame(void)
 {
     std::cout << "In init" << '\n';
-    myPlane.CreatePlane({SCREEN_WIDTH/2, SCREEN_HEIGHT/2});
-    plane2.CreatePlane({SCREEN_WIDTH/2, (SCREEN_HEIGHT/2) - 100});
+    myPlane.CreatePlane({SCREEN_WIDTH/2, SCREEN_HEIGHT/2}, counter);
+    counter++;
+    plane2.CreatePlane({SCREEN_WIDTH/2, (SCREEN_HEIGHT/2) - 100}, counter);
     enemyPlanes.emplace_back(plane2);
     
 
@@ -300,6 +302,14 @@ void GetMovement()
 
 void UpdatePlane(Plane& plane)
 {
+    if(myPlane.planeAngle >= 360)
+    {
+        myPlane.planeAngle = std::fmod(myPlane.planeAngle, 360);
+    }
+    if(myPlane.planeAngle < 0)
+    {
+        myPlane.planeAngle = 360 + myPlane.planeAngle;
+    }
     if(!plane.isCrashed)
     {
         plane.position.x += (cosf(DegToRad(myPlane.planeAngle)) * plane.velocity.x);
@@ -369,6 +379,7 @@ void UpdateEnemyPlane(Plane& plane)
         plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * plane.velocity.x);
     }
     else {
+        
         if(plane.planeAngle >= 90 && plane.planeAngle <= 270)
         {
             if(plane.planeAngle != 270)
@@ -510,7 +521,7 @@ void DrawGame()
                     int y = 0;
                     for(Plane& ep : enemyPlanes)
                     {
-                        if(CheckCollisionCircleRec(bullet.position, 5.0, planeImages[y]) && (&bullet.shotBy != &ep))
+                        if(CheckCollisionCircleRec(bullet.position, 5.0, planeImages[y]) && (bullet.shotBy.index != ep.index))
                         {
                             text = "HITTHETARGET";
                             DrawText(text.c_str(), 200, 200, 20, BLACK);
@@ -519,10 +530,10 @@ void DrawGame()
                         }
                         y++;
                     }
-                    if(CheckCollisionCircleRec(bullet.position, 5.0, dest) && (&bullet.shotBy != &myPlane))
+                    if(CheckCollisionCircleRec(bullet.position, 5.0, dest) && (bullet.shotBy.index != myPlane.index))
                     {
                         std::cout << "two locations" << &bullet.shotBy << " " << &myPlane << '\n';
-                        std::cout << "ok " << bullet.shotBy.name << " " << myPlane.name << '\n';
+                        //std::cout << "ok " << bullet.shotBy.name << " " << myPlane.name << '\n';
                         myPlane.isCrashed = true;
                         bullet.isDone = true;
                     }
