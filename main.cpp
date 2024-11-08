@@ -50,6 +50,7 @@ class Plane {
         std::chrono::time_point<std::chrono::system_clock> start, end, ct;
         Rectangle planeImage;
         int index;
+        bool him = false;
         void CreatePlane(Vector2 startPos, int counter)
         {
             index = counter;
@@ -115,6 +116,7 @@ Plane myPlane;
 Plane plane2;
 static std::vector<Bullet> bulletsInAir;
 int counter = 0;
+int score = 0;
 
 
 static Plane planes[10] = {myPlane};
@@ -165,6 +167,7 @@ void InitGame(void)
 {
     std::cout << "In init" << '\n';
     myPlane.CreatePlane({SCREEN_WIDTH/2, SCREEN_HEIGHT/2}, counter);
+    myPlane.him = true;
     counter++;
     plane2.CreatePlane({SCREEN_WIDTH/2, (SCREEN_HEIGHT/2) - 100}, counter);
     enemyPlanes.emplace_back(plane2);
@@ -234,41 +237,44 @@ void GetMovement()
     {
         myPlane.planeAngle = 360 + myPlane.planeAngle;
     }
-    if (IsKeyDown(KEY_W)) 
+    if(!myPlane.isCrashed)
     {
-        if(myPlane.planeAngle == 90)
-            std::cout << "90" << '\n';
-        else if(myPlane.planeAngle < 90 || myPlane.planeAngle >= 270)
-            myPlane.planeAngle += 3;
-        else
-           myPlane.planeAngle -= 3; 
-    }
-    if (IsKeyDown(KEY_A)) 
-    {
-        if(myPlane.planeAngle == 180)
-            std::cout << "180" << '\n';
-        else if(myPlane.planeAngle < 180)
-            myPlane.planeAngle += 3;
-        else
-           myPlane.planeAngle -= 3; 
-    }
-    if (IsKeyDown(KEY_S)) 
-    {
-        if(myPlane.planeAngle == 270)
-            std::cout << "270" << '\n';
-        else if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
-            myPlane.planeAngle -= 3;
-        else
-           myPlane.planeAngle += 3; 
-    }
-    if (IsKeyDown(KEY_D)) 
-    {
-        if(myPlane.planeAngle == 0)
-            std::cout << "0" << '\n';
-        else if(myPlane.planeAngle <= 180)
-            myPlane.planeAngle -= 3;
-        else
-           myPlane.planeAngle += 3; 
+        if (IsKeyDown(KEY_W)) 
+        {
+            if(myPlane.planeAngle == 90)
+                std::cout << "90" << '\n';
+            else if(myPlane.planeAngle < 90 || myPlane.planeAngle >= 270)
+                myPlane.planeAngle += 3;
+            else
+            myPlane.planeAngle -= 3; 
+        }
+        if (IsKeyDown(KEY_A)) 
+        {
+            if(myPlane.planeAngle == 180)
+                std::cout << "180" << '\n';
+            else if(myPlane.planeAngle < 180)
+                myPlane.planeAngle += 3;
+            else
+            myPlane.planeAngle -= 3; 
+        }
+        if (IsKeyDown(KEY_S)) 
+        {
+            if(myPlane.planeAngle == 270)
+                std::cout << "270" << '\n';
+            else if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
+                myPlane.planeAngle -= 3;
+            else
+            myPlane.planeAngle += 3; 
+        }
+        if (IsKeyDown(KEY_D)) 
+        {
+            if(myPlane.planeAngle == 0)
+                std::cout << "0" << '\n';
+            else if(myPlane.planeAngle <= 180)
+                myPlane.planeAngle -= 3;
+            else
+            myPlane.planeAngle += 3; 
+        }
     }
     if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
@@ -461,9 +467,9 @@ void DrawGame()
 
         if (!gameOver)
         {
-            DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, BLUE);
+            DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, {135, 206, 255, 255});
 
-            std::string text = "Angle: -" + std::to_string(myPlane.planeAngle);
+            std::string text = "Score: " + std::to_string(score);
 
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
             text = "shoot pew pew";
@@ -523,6 +529,10 @@ void DrawGame()
                     {
                         if(CheckCollisionCircleRec(bullet.position, 5.0, planeImages[y]) && (bullet.shotBy.index != ep.index))
                         {
+                            if(bullet.shotBy.him && !ep.isCrashed)
+                            {
+                                score++;
+                            }
                             text = "HITTHETARGET";
                             DrawText(text.c_str(), 200, 200, 20, BLACK);
                             bullet.isDone = true;
@@ -537,7 +547,7 @@ void DrawGame()
                         myPlane.isCrashed = true;
                         bullet.isDone = true;
                     }
-                    DrawCircleV(bullet.position, 5.0f, RED);
+                    DrawCircleV(bullet.position, 3.0f, GRAY);
                 }
             }
         }
