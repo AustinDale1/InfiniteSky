@@ -308,6 +308,10 @@ void GetMovement()
 
 void UpdatePlane(Plane& plane)
 {
+    if(plane.isCrashed && plane.position.y > SCREEN_HEIGHT)
+    {
+        gameOver = true;
+    }
     if(myPlane.planeAngle >= 360)
     {
         myPlane.planeAngle = std::fmod(myPlane.planeAngle, 360);
@@ -342,6 +346,19 @@ double x = 1;
 int bulCount = 0;
 void UpdateEnemyPlane(Plane& plane)
 {
+    if(plane.planeAngle >= 360)
+    {
+        plane.planeAngle = std::fmod(plane.planeAngle, 360);
+    }
+    if(plane.planeAngle < 0)
+    {
+        plane.planeAngle = 360 + plane.planeAngle;
+    }
+    if(plane.isCrashed && plane.position.y > SCREEN_HEIGHT)
+    {
+        plane.isCrashed = false;
+        plane.position = {SCREEN_WIDTH/10, (SCREEN_HEIGHT/8)};
+    }
     if(!plane.isCrashed) {
         angle = atanf((myPlane.position.x - plane.position.x)/(-myPlane.position.y + plane.position.y));
         angle = (angle * 180)/3.14;
@@ -537,6 +554,7 @@ void DrawGame()
                             DrawText(text.c_str(), 200, 200, 20, BLACK);
                             bullet.isDone = true;
                             ep.isCrashed = true;
+                            text = std::to_string(planes->planeAngle);
                         }
                         y++;
                     }
@@ -550,6 +568,7 @@ void DrawGame()
                     DrawCircleV(bullet.position, 3.0f, GRAY);
                 }
             }
+            DrawText(text.c_str(), 600, 20, 20, BLACK); 
         }
         else 
         {
