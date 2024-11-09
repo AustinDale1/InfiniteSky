@@ -291,7 +291,7 @@ void GetMovement()
         std::cout << "count " << bulletCount <<'\n';
     }
     
-    if(myPlane.isShooting && bulletCount < 4 && ((std::chrono::system_clock::now() - myPlane.ct) > std::chrono::milliseconds(50)))
+    if(myPlane.isShooting && bulletCount < 5 && ((std::chrono::system_clock::now() - myPlane.ct) > std::chrono::milliseconds(50)))
     {
         std::cout << "in alt" << '\n';
         bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
@@ -432,7 +432,7 @@ void UpdateEnemyPlane(Plane& plane)
         }
     }
    
-    if(plane.isShooting && bulCount < 4 && ((std::chrono::system_clock::now() - plane.ct) > std::chrono::milliseconds(50)))
+    if(plane.isShooting && bulCount < 5 && ((std::chrono::system_clock::now() - plane.ct) > std::chrono::milliseconds(50)))
     {
         std::cout << "in alt" << '\n';
         bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));

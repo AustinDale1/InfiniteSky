@@ -1,4 +1,7 @@
--Machine Gun
--Enemy Plane
--Camera Logic
--
+-Better movement system, variable speed?
+-Better enemy ai, dodging?
+-Machine gun cooldown
+-Missiles, powerups, multiple planes?
+-Changing camera when you leave screen
+
+-3D version?
