@@ -3,5 +3,7 @@
 -Machine gun cooldown
 -Missiles, powerups, multiple planes?
 -Changing camera when you leave screen
+-Fix bullet randomly appearing glitch
+-Fix enter to play again
 
 -3D version?

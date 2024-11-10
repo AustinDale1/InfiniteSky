@@ -197,7 +197,7 @@ void UpdateGame()
             {
                 UpdateEnemyPlane(ep);
             }
-            UpdateEnemyPlane(plane2);
+            // UpdateEnemyPlane(plane2);
             int i = 0;
             for (Bullet& bullet : bulletsInAir) {
                 if(!bullet.isDone)
@@ -312,8 +312,6 @@ void GetMovement()
                 myPlane.dur = myPlane.dur - (std::chrono::system_clock::now() - myPlane.newStart);
             }
         }
-        
-
     } else {
         if(myPlane.isShooting)
         {
