@@ -48,6 +48,8 @@ class Plane {
         bool isCrashed = false;
         bool isShooting = false;
         std::chrono::time_point<std::chrono::system_clock> start, end, ct;
+        std::chrono::time_point<std::chrono::system_clock> newStart, newEnd;
+        std::chrono::duration<double> dur{5.0};
         Rectangle planeImage;
         int index;
         bool him = false;
@@ -195,7 +197,7 @@ void UpdateGame()
             {
                 UpdateEnemyPlane(ep);
             }
-            // UpdateEnemyPlane(plane2);
+            UpdateEnemyPlane(plane2);
             int i = 0;
             for (Bullet& bullet : bulletsInAir) {
                 if(!bullet.isDone)
@@ -226,6 +228,7 @@ void UpdateGame()
 }
 
 int bulletCount = 0;
+bool initialized = false;
 
 void GetMovement()
 {
@@ -276,33 +279,71 @@ void GetMovement()
             myPlane.planeAngle += 3; 
         }
     }
-    if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    {
+    // if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    // {
         
-        if(!myPlane.isShooting)
-        {        
-            bulletCount = 0;
-            bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
-            bulletCount++;
-            myPlane.isShooting = true;
-            myPlane.start = std::chrono::system_clock::now();
-            myPlane.ct = std::chrono::system_clock::now();
+    //     if(!myPlane.isShooting)
+    //     {        
+    //         bulletCount = 0;
+    //         bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
+    //         bulletCount++;
+    //         myPlane.isShooting = true;
+    //         myPlane.start = std::chrono::system_clock::now();
+    //         myPlane.ct = std::chrono::system_clock::now();
+    //     }
+    //     std::cout << "count " << bulletCount <<'\n';
+    // }
+    if(IsMouseButtonDown(MOUSE_LEFT_BUTTON))
+    {
+        // std::cout << "oy " << myPlane.dur.count() << '\n';
+        if(myPlane.dur > std::chrono::seconds(0))
+        {
+            if(!myPlane.isShooting)
+            {
+                myPlane.newStart = std::chrono::system_clock::now();
+                bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
+                myPlane.isShooting = true;
+
+            } else
+            {
+                bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
+                myPlane.newEnd = std::chrono::system_clock::now();
+                
+                myPlane.dur = myPlane.dur - (std::chrono::system_clock::now() - myPlane.newStart);
+            }
         }
-        std::cout << "count " << bulletCount <<'\n';
+        
+
+    } else {
+        if(myPlane.isShooting)
+        {
+            myPlane.isShooting = false;
+            myPlane.newEnd = std::chrono::system_clock::now();
+            initialized = true;
+            // std::cout << "Do we ever get here?";
+        }
+        // std::cout << initialized << '\n';
+        if(myPlane.dur <= std::chrono::seconds(5) && initialized)
+        {
+            // std::cout << "here? or here" ;
+            //std::string frickml = std::to_string((std::chrono::system_clock::now() - myPlane.newEnd).count());
+            // std::cout << "huh " << (std::chrono::system_clock::now() - myPlane.newEnd).count();
+            myPlane.dur = myPlane.dur + (std::chrono::system_clock::now() - myPlane.newEnd);
+        }  
     }
     
-    if(myPlane.isShooting && bulletCount < 5 && ((std::chrono::system_clock::now() - myPlane.ct) > std::chrono::milliseconds(50)))
-    {
-        std::cout << "in alt" << '\n';
-        bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
-        myPlane.ct = std::chrono::system_clock::now();
-        bulletCount++;
-    }
-    myPlane.end = std::chrono::system_clock::now();
-    if( (myPlane.end-myPlane.start) > std::chrono::seconds(2))
-    {
-        myPlane.isShooting = false;
-    }
+    // if(myPlane.isShooting && bulletCount < 5 && ((std::chrono::system_clock::now() - myPlane.ct) > std::chrono::milliseconds(50)))
+    // {
+    //     std::cout << "in alt" << '\n';
+    //     bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
+    //     myPlane.ct = std::chrono::system_clock::now();
+    //     bulletCount++;
+    // }
+    // myPlane.end = std::chrono::system_clock::now();
+    // if( (myPlane.end-myPlane.start) > std::chrono::seconds(2))
+    // {
+    //     myPlane.isShooting = false;
+    // }
 }
 
 
@@ -568,7 +609,9 @@ void DrawGame()
                     DrawCircleV(bullet.position, 3.0f, GRAY);
                 }
             }
-            DrawText(text.c_str(), 600, 20, 20, BLACK); 
+            //text = myPlane.dur;
+            //text = "maybe";
+            DrawText(text.c_str(), 800, 20, 20, BLACK); 
         }
         else 
         {
