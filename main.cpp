@@ -53,6 +53,7 @@ class Plane {
         Rectangle planeImage;
         int index;
         bool him = false;
+        int health = 20;
         void CreatePlane(Vector2 startPos, int counter)
         {
             index = counter;
@@ -396,6 +397,7 @@ void UpdateEnemyPlane(Plane& plane)
     if(plane.isCrashed && plane.position.y > SCREEN_HEIGHT)
     {
         plane.isCrashed = false;
+        plane.health = 20;
         plane.position = {SCREEN_WIDTH/10, (SCREEN_HEIGHT/8)};
     }
     if(!plane.isCrashed) {
@@ -585,14 +587,19 @@ void DrawGame()
                     {
                         if(CheckCollisionCircleRec(bullet.position, 5.0, planeImages[y]) && (bullet.shotBy.index != ep.index))
                         {
-                            if(bullet.shotBy.him && !ep.isCrashed)
+                            ep.health--;
+                            if(bullet.shotBy.him && !ep.isCrashed && ep.health <= 0)
                             {
                                 score++;
                             }
                             text = "HITTHETARGET";
                             DrawText(text.c_str(), 200, 200, 20, BLACK);
                             bullet.isDone = true;
-                            ep.isCrashed = true;
+
+                            if(ep.health <= 0)
+                            {
+                                ep.isCrashed = true;
+                            }
                             text = std::to_string(planes->planeAngle);
                         }
                         y++;
@@ -601,7 +608,12 @@ void DrawGame()
                     {
                         std::cout << "two locations" << &bullet.shotBy << " " << &myPlane << '\n';
                         //std::cout << "ok " << bullet.shotBy.name << " " << myPlane.name << '\n';
-                        myPlane.isCrashed = true;
+                        myPlane.health--;
+                        if(myPlane.health <= 0)
+                        {
+                            myPlane.isCrashed = true;
+                        }
+                        // myPlane.isCrashed = true;
                         bullet.isDone = true;
                     }
                     DrawCircleV(bullet.position, 3.0f, GRAY);
