@@ -69,6 +69,7 @@ class Plane {
                 };
             planeImages.emplace_back(planeImage);
         }
+
     Plane() { 
     }
 };
@@ -124,7 +125,8 @@ int score = 0;
 
 
 static Plane planes[10] = {myPlane};
-static void InitGame(void);   
+static void InitGame(void);
+static void RestartGame(void);
 static void UpdateDrawFrame(); 
 static void UpdateGame();  
 static void GetMovement(); 
@@ -179,6 +181,28 @@ void InitGame(void)
 
 }
 
+void RestartGame(void)
+{
+    myPlane.position = {SCREEN_WIDTH/2, SCREEN_HEIGHT/2};
+    myPlane.health = 20;
+    myPlane.isShooting = false;
+    myPlane.init = false;
+    myPlane.isCrashed = false;
+    myPlane.planeAngle = 0.0f;
+    for(Plane& ep : enemyPlanes)
+    {
+        ep.position = {SCREEN_WIDTH/2, (SCREEN_HEIGHT/2) - 100};
+        ep.health = 20;
+        ep.isShooting = false;
+        ep.init = false;
+        ep.isCrashed = false;
+        ep.planeAngle = 0.0f;
+    }
+    score = 0;
+    bulletsInAir.clear();
+
+}
+
 void UpdateDrawFrame()
 {
     UpdateGame();
@@ -222,7 +246,7 @@ void UpdateGame()
     {
         if (IsKeyPressed(KEY_ENTER))
         {
-            InitGame();
+            RestartGame();
             std::cout << "restarting game" << '\n';
             gameOver = false;
         }
@@ -319,11 +343,11 @@ void GetMovement()
         {
             myPlane.isShooting = false;
             myPlane.newEnd = std::chrono::system_clock::now();
-            initialized = true;
+            myPlane.init = true;
             // std::cout << "Do we ever get here?";
         }
         // std::cout << initialized << '\n';
-        if(myPlane.dur <= std::chrono::seconds(5) && initialized)
+        if(myPlane.dur <= std::chrono::seconds(5) && myPlane.init)
         {
             // std::cout << "here? or here" ;
             //std::string frickml = std::to_string((std::chrono::system_clock::now() - myPlane.newEnd).count());
