@@ -1,6 +1,7 @@
 #include "raylib.h"
 
 #include <iostream>
+#include <algorithm>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -11,6 +12,8 @@
 #include <chrono>  
 #include <vector>
 #include <thread>
+#include <iomanip>
+
 
 #if defined(PLATFORM_WEB)
     #include <emscripten/emscripten.h>
@@ -88,35 +91,6 @@ class Bullet {
     } 
 };
 
-
-
-// class EnemyPlane {
-//     public:
-//         Vector2 position;
-//             Vector2 velocity; 
-//             double planeAngle = 0.0f;
-//             bool isCrashed = false;
-//             bool isShooting = false;
-//             std::chrono::time_point<std::chrono::system_clock> start, end, ct;
-//             void CreatePlane(Vector2 startPos)
-//             {
-//                 this->position = startPos;
-//                 this->velocity.x = 5;
-//                 this->velocity.y = 0;
-//                 Rectangle dest2 = {
-//                     this->position.x, 
-//                     this->position.y,
-//                     texture.width * .1f,
-//                     texture.height * .1f
-//                 };
-//                 std::cout << "On creation " << dest2.width << "\n\n\n\n\n\n\n";
-//                 planeImages.emplace_back(dest2);
-                
-//             }
-//     EnemyPlane() { 
-//     }
-// };
-
 Plane myPlane;
 Plane plane2;
 static std::vector<Bullet> bulletsInAir;
@@ -132,7 +106,9 @@ static void UpdateGame();
 static void GetMovement(); 
 static void UpdatePlane(Plane& plane);
 static void UpdateEnemyPlane(Plane& plane);
-static void DrawGame();  
+static void DrawGame();
+static Vector2 RotatePoint(Vector2& point, Vector2& center, float angle);
+static Rectangle RotateRectangle(Rectangle& rect, float angle);
 
 
 double DegToRad(double x)
@@ -423,7 +399,7 @@ void UpdateEnemyPlane(Plane& plane)
     {
         plane.isCrashed = false;
         plane.health = 20;
-        plane.position = {SCREEN_WIDTH/10, (SCREEN_HEIGHT/8)};
+        plane.position = {-200, 100};
     }
     if(!plane.isCrashed) {
         angle = atanf((myPlane.position.x - plane.position.x)/(-myPlane.position.y + plane.position.y));
@@ -484,34 +460,45 @@ void UpdateEnemyPlane(Plane& plane)
         x = x + .01;
 
     }
-
     if(angle - plane.planeAngle <= 5 && angle - plane.planeAngle >= 0)
     {
         if(plane.dur > std::chrono::seconds(0))
         {
             if(!plane.isShooting)
             {
-                std::cout << "in first one" << '\n';
                 plane.newStart = std::chrono::system_clock::now();
+                // std::cout << "Started" << '\n';
                 bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));
                 plane.isShooting = true;
             } else
             {
-                bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));
-                plane.newEnd = std::chrono::system_clock::now();
-                plane.dur = plane.dur - (std::chrono::system_clock::now() - plane.newStart);
+                // if(bulletCount % 10 == 0)
+                // {
+                    // std::cout << "End" << '\n';
+                    bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));
+                    plane.newEnd = std::chrono::system_clock::now();
+                    // std::cout << "1 " << plane.dur.count() << '\n';
+                    plane.dur = plane.dur - (std::chrono::system_clock::now() - plane.newStart);
+                    // std::cout << "1 " << plane.dur.count() << '\n';
+                // }
+                bulletCount++;
+
             }
         }
     } else 
     {
         if(plane.isShooting)
         {
-            std::cout << "in second one" << '\n';
-            plane.isShooting = false;
-            plane.newEnd = std::chrono::system_clock::now();
-            plane.init = true;
+            if(std::chrono::system_clock::now() - plane.newStart > std::chrono::seconds(1)) {
+                std::cout << "Do you stop shooting? " << '\n';
+                plane.isShooting = false;
+                plane.newEnd = std::chrono::system_clock::now();
+                plane.init = true;
+            } else {
+                std::cout << "Do you go here often" << '\n';
+            }
         }
-        if(plane.dur <= std::chrono::seconds(5) && initialized)
+        if(plane.dur <= std::chrono::seconds(5) && plane.init)//This used to be if(plane.dur <= std::chrono::seconds(5) && initialized)??  dunno what that's about
         {
             plane.dur = plane.dur + (std::chrono::system_clock::now() - plane.newEnd);
         }  
@@ -589,13 +576,79 @@ void UpdateEnemyPlane(Plane& plane)
 
 }
 
+int counter2 = 0;
 
+Vector2 RotatePoint(Vector2& point, Vector2& center, float angle) {
+    // Convert angle to radians
+    float rad = angle * DEG2RAD;
+    
+    // Translate point to origin
+    float translatedX = point.x - center.x;
+    float translatedY = point.y - center.y;
+    
+    // Rotate point
+    float rotatedX = translatedX * cos(rad) - translatedY * sin(rad);
+    float rotatedY = translatedX * sin(rad) + translatedY * cos(rad);
+    
+    // Translate point back
+    return {
+        rotatedX + center.x, 
+        rotatedY + center.y
+    };
+}
+
+Rectangle RotateRectangle(Rectangle& rect, float angle) {
+    // Calculate rectangle center
+    Vector2 center = {
+        rect.x + rect.width / 2.0f, 
+        rect.y + rect.height / 2.0f
+    };
+    
+    // Define the four corners of the rectangle
+    Vector2 topLeft = {rect.x, rect.y};
+    Vector2 topRight = {rect.x + rect.width, rect.y};
+    Vector2 bottomRight = {rect.x + rect.width, rect.y + rect.height};
+    Vector2 bottomLeft = {rect.x, rect.y + rect.height};
+    
+    // Rotate each point around the center
+    topLeft = RotatePoint(topLeft, center, angle);
+    topRight = RotatePoint(topRight, center, angle);
+    bottomRight = RotatePoint(bottomRight, center, angle);
+    bottomLeft = RotatePoint(bottomLeft, center, angle);
+    
+    // Find new bounding box
+    float minX = std::min({topLeft.x, topRight.x, bottomRight.x, bottomLeft.x});
+    float maxX = std::max({topLeft.x, topRight.x, bottomRight.x, bottomLeft.x});
+    float minY = std::min({topLeft.y, topRight.y, bottomRight.y, bottomLeft.y});
+    float maxY = std::max({topLeft.y, topRight.y, bottomRight.y, bottomLeft.y});
+    
+    // Update rectangle
+    rect.x = minX;
+    rect.y = minY;
+    rect.width = maxX - minX;
+    rect.height = maxY - minY;
+    return rect;
+}
+
+static int counterr = 0;
 
 void DrawGame()
 {
     BeginDrawing();
 
         ClearBackground(RAYWHITE);
+        Rectangle r = {
+            200, 
+            200,
+            20,
+            20
+            };
+            counterr++;
+            // RotateRectangle(r, 1);
+            //r.
+            // DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+            // DrawRectangleRec(RotateRectangle(r, counterr), GREEN);
+            
         Rectangle source = {
             0.0f,
             0.0f,
@@ -631,34 +684,44 @@ void DrawGame()
             std::string text = "Score: " + std::to_string(score);
 
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
-            text = "shoot pew pew";
-            //DrawRectangle(myPlane.position.x, myPlane.position.y, 100, 20, GRAY);
+            
+            text = "Health: " + std::to_string(myPlane.health);
+            DrawText(text.c_str(), 1800, 20, 20, BLACK); 
+            text = "Bullets: " + std::to_string(myPlane.dur.count());
+            DrawText(text.c_str(), 1800, 120, 20, BLACK);
 
-            //DrawTexture(texture, myPlane.position.x, myPlane.position.y, WHITE);
-            // if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
-            //     DrawTextureEx(texture, {myPlane.position.x - 50, myPlane.position.y}, -myPlane.planeAngle, .3, WHITE);  // Draw a Texture2D with extended parameters
-            // else
-            // {           
-            //     //DrawTextureEx(textureFlip, myPlane.position, -myPlane.planeAngle, .3, WHITE);
-            //     //DrawTextureEx(textureFlip2, {myPlane.position.x, myPlane.position.y + 50}, -myPlane.planeAngle, .3, WHITE);
-            //     DrawTextureEx(textureFlip3, {myPlane.position.x - 50, myPlane.position.y}, -myPlane.planeAngle, .3, WHITE);
-            // }
+            for(Plane loopEP : enemyPlanes) {
+                if(loopEP.health > 0) {
+                    text = "EnemyHealth: " + std::to_string(loopEP.health);
+                    DrawText(text.c_str(), 2000, 20, 20, BLACK); 
+                    text = "EnemyBullets: " + std::to_string(loopEP.dur.count());
+                    DrawText(text.c_str(), 2000, 120, 20, BLACK); 
+
+                    // text = "newstart: " + std::to_string(plane2.newStart);
+                    // DrawText(text.c_str(), 2000, 220, 20, BLACK); 
+                    // text = "newend: " + std::to_string(plane2.newEnd);
+                    // DrawText(text.c_str(), 2000, 320, 20, BLACK); 
+                    // text = "now: " + std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::system_clock::now());
+                    // DrawText(text.c_str(), 2000, 420, 20, BLACK); 
+                }
+            }
+  
+
+
+            text = "shoot pew pew";
+            DrawRectangleRec((Rectangle){dest.x, dest.y, dest.width, dest.height}, RED);
 
             if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
                 DrawTexturePro(texture, source, dest, origin, -myPlane.planeAngle, WHITE);  // Draw a Texture2D with extended parameters
             else
             {           
                 DrawTexturePro(textureFlip3, source, dest, origin, -myPlane.planeAngle, WHITE);
-            }//DrawTexturePro(Texture2D texture, Rectangle source, Rectangle dest, Vector2 origin, float rotation, Color tint);
+            }
             int x = 0;
-        //             Rectangle dest2 = {
-        //     plane2.position.x, 
-        //     plane2.position.y,
-        //     texture.width * .1f,
-        //     texture.height * .1f
-        // };
+
             for(Plane& ep : enemyPlanes)
             {
+                DrawRectangleRec(planeImages[x], RED);
                 planeImages[x].x = ep.position.x;
                 planeImages[x].y = ep.position.y;
                 if(ep.planeAngle <= 90 || ep.planeAngle > 270) {
@@ -671,11 +734,7 @@ void DrawGame()
                 x++;
                 text = std::to_string(static_cast<int>(ep.dur.count()));
             }
-            if(myPlane.isShooting)
-            {
-                //DrawText(text.c_str(), 200, 20, 20, BLACK); 
 
-            }
             DrawText(text.c_str(), 200, 20, 20, BLACK); 
             if (pause) DrawText("GAME PAUSED", SCREEN_WIDTH/2 - MeasureText("GAME PAUSED", 40)/2, SCREEN_HEIGHT/2 - 40, 40, GRAY);
             text = std::to_string(angle);
@@ -693,25 +752,28 @@ void DrawGame()
                             ep.health--;
                             if(bullet.shotBy.him && !ep.isCrashed && ep.health <= 0)
                             {
+                                myPlane.health += 5;
                                 score++;
+                                ep.isCrashed = true;
                             }
                             text = "HITTHETARGET";
                             DrawText(text.c_str(), 200, 200, 20, BLACK);
                             bullet.isDone = true;
 
-                            if(ep.health <= 0)
-                            {
-                                ep.isCrashed = true;
-                            }
                             text = std::to_string(planes->planeAngle);
                         }
                         y++;
                     }
                     if(CheckCollisionCircleRec(bullet.position, 5.0, dest) && (bullet.shotBy.index != myPlane.index))
                     {
-                        std::cout << "two locations" << &bullet.shotBy << " " << &myPlane << '\n';
+                        counter2++;
                         //std::cout << "ok " << bullet.shotBy.name << " " << myPlane.name << '\n';
                         myPlane.health--;
+                        if(bullet.isDone)
+                        {
+                            gameOver = true;
+                        }
+
                         if(myPlane.health <= 0)
                         {
                             myPlane.isCrashed = true;
@@ -724,11 +786,24 @@ void DrawGame()
             }
             //text = myPlane.dur;
             //text = "maybe";
+            text = std::to_string(myPlane.health);
             DrawText(text.c_str(), 800, 20, 20, BLACK); 
         }
         else 
         {
+            // Rectangle r = {
+            // 200, 
+            // 200,
+            // 20,
+            // 20
+            // };
+            // counterr++;
+            // std::cout << "IT GOT HERE " << '\n';
+            // // RotateRectangle(r, 1);
+            // //r.
             DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
+            // DrawRectangleRec(RotateRectangle(r, counter), GREEN);
+
         }
     EndDrawing();
 }

@@ -6,4 +6,9 @@
 -Fix bullet randomly appearing glitch
 -Fix enter to play again
 
+
+-Important bug fixes
+-Machine gun cooldown sometimes breaks for enemy plane
+-hitboxes
+
 -3D version?
