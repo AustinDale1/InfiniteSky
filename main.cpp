@@ -630,6 +630,38 @@ Rectangle RotateRectangle(Rectangle& rect, float angle) {
     return rect;
 }
 
+Vector2 RotateCircle(Vector2 coords, Vector2 origin, float angle) {
+    // Vector2 originPos = {
+    //     origin.x,
+    //     origin.y
+    // };
+    float angle2 = (angle * 3.14)/180;
+    
+    double s = sinf(angle2);
+    double c = cosf(angle2);
+
+    // translate point back to origin
+    Vector2 rotated = {
+    rotated.x = coords.x - origin.x,
+    rotated.y = coords.y - origin.y,
+    };
+
+    // Vector2 rotated = {
+    // rotated.x = coords.x,
+    // rotated.y = coords.y,
+    // };
+
+    // rotate point
+    double x_new = rotated.x * c - rotated.y * s;
+    double y_new = rotated.x * s + rotated.y * c;
+
+    // translate point back
+    rotated.x = x_new + origin.x;
+    rotated.y = y_new + origin.y;
+
+    return rotated;
+}
+
 static int counterr = 0;
 
 void DrawGame()
@@ -637,6 +669,7 @@ void DrawGame()
     BeginDrawing();
 
         ClearBackground(RAYWHITE);
+        // DrawText(TextFormat("CURRENT FPS: %i", (int)(1.0f/deltaTime)), GetScreenWidth() - 220, 40, 20, GREEN);
         Rectangle r = {
             200, 
             200,
@@ -710,6 +743,9 @@ void DrawGame()
 
             text = "shoot pew pew";
             DrawRectangleRec((Rectangle){dest.x, dest.y, dest.width, dest.height}, RED);
+            // DrawRectangleLines(dest.x - (dest.width/2), dest.y-(dest.height/2), dest.width, dest.height, RED);
+            DrawRectanglePro(dest, origin, -myPlane.planeAngle, GREEN);
+
 
             if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
                 DrawTexturePro(texture, source, dest, origin, -myPlane.planeAngle, WHITE);  // Draw a Texture2D with extended parameters
@@ -722,6 +758,8 @@ void DrawGame()
             for(Plane& ep : enemyPlanes)
             {
                 DrawRectangleRec(planeImages[x], RED);
+                // DrawRectangleLines(planeImages[x].x - (planeImages[x].width/2), planeImages[x].y -(planeImages[x].height/2), planeImages[x].width, planeImages[x].height, RED);
+                DrawRectanglePro(planeImages[x], origin, -ep.planeAngle, GREEN);
                 planeImages[x].x = ep.position.x;
                 planeImages[x].y = ep.position.y;
                 if(ep.planeAngle <= 90 || ep.planeAngle > 270) {
@@ -747,7 +785,7 @@ void DrawGame()
                     int y = 0;
                     for(Plane& ep : enemyPlanes)
                     {
-                        if(CheckCollisionCircleRec(bullet.position, 5.0, planeImages[y]) && (bullet.shotBy.index != ep.index))
+                        if(CheckCollisionCircleRec(RotateCircle(bullet.position, ep.position, myPlane.planeAngle), 5.0, planeImages[y]) && (bullet.shotBy.index != ep.index))
                         {
                             ep.health--;
                             if(bullet.shotBy.him && !ep.isCrashed && ep.health <= 0)
@@ -764,7 +802,15 @@ void DrawGame()
                         }
                         y++;
                     }
-                    if(CheckCollisionCircleRec(bullet.position, 5.0, dest) && (bullet.shotBy.index != myPlane.index))
+                    Vector2 adjusted = RotateCircle(bullet.position, myPlane.position, myPlane.planeAngle);
+                    // if(CheckCollisionCircleRec(adjusted, 5.0, dest)) {
+                    //     std::cout << dest.x << " " << dest.y << '\n';
+                    //     std::cout << adjusted.x << " " << adjusted.y << '\n';
+                    //     std::cout << bullet.position.x << " " << bullet.position.y << '\n';
+                    //     gameOver = true;
+                    //     break;
+                    // }
+                    if(CheckCollisionCircleRec(RotateCircle(bullet.position, myPlane.position, myPlane.planeAngle), 5.0, dest) && (bullet.shotBy.index != myPlane.index))
                     {
                         counter2++;
                         //std::cout << "ok " << bullet.shotBy.name << " " << myPlane.name << '\n';
@@ -782,6 +828,7 @@ void DrawGame()
                         bullet.isDone = true;
                     }
                     DrawCircleV(bullet.position, 3.0f, GRAY);
+                    // DrawCircleV(RotateCircle(bullet.position, myPlane.position, myPlane.planeAngle), 3.0f, PINK);
                 }
             }
             //text = myPlane.dur;
