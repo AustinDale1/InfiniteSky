@@ -91,9 +91,22 @@ class Bullet {
     } 
 };
 
+class SmokeParticle {
+    public:
+        Vector2 position;
+        std::chrono::time_point<std::chrono::system_clock> start;
+
+    SmokeParticle(Vector2 pos, std::chrono::time_point<std::chrono::system_clock> cTime) {
+        int randomNum = rand() % 20; 
+        position = {pos.x + randomNum - 10, pos.y};
+        start = cTime;
+    }
+};
+
 Plane myPlane;
 Plane plane2;
 static std::vector<Bullet> bulletsInAir;
+static std::vector<SmokeParticle> smokeInAir;
 int counter = 0;
 int score = 0;
 
@@ -165,6 +178,8 @@ void RestartGame(void)
     myPlane.init = false;
     myPlane.isCrashed = false;
     myPlane.planeAngle = 0.0f;
+
+    myPlane.dur = std::chrono::duration<double>(5.0);
     for(Plane& ep : enemyPlanes)
     {
         ep.position = {SCREEN_WIDTH/2, (SCREEN_HEIGHT/2) - 100};
@@ -173,9 +188,11 @@ void RestartGame(void)
         ep.init = false;
         ep.isCrashed = false;
         ep.planeAngle = 0.0f;
+        ep.dur = std::chrono::duration<double>(5.0);;
     }
     score = 0;
     bulletsInAir.clear();
+    smokeInAir.clear();
 
 }
 
@@ -669,6 +686,7 @@ void DrawGame()
     BeginDrawing();
 
         ClearBackground(RAYWHITE);
+
         // DrawText(TextFormat("CURRENT FPS: %i", (int)(1.0f/deltaTime)), GetScreenWidth() - 220, 40, 20, GREEN);
         Rectangle r = {
             200, 
@@ -713,6 +731,40 @@ void DrawGame()
         if (!gameOver)
         {
             DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, {135, 206, 255, 255});
+            Rectangle grad = {
+                0,
+                0,
+                SCREEN_WIDTH,
+                SCREEN_HEIGHT
+            };
+            Color semiTransparentRed = {255, 0, 0, 128};
+            // DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, semiTransparentRed);
+
+            // DrawRectangleGradientV(50, 0, SCREEN_WIDTH-100, 50, RED, {135, 206, 255, 255}); // Top edge
+            // DrawRectangleGradientV(50, SCREEN_HEIGHT - 50, SCREEN_WIDTH-100, 50, {135, 206, 255, 255}, RED); // Bottom edge
+            // DrawRectangleGradientH(0, 50, 50, SCREEN_HEIGHT-100, RED, {135, 206, 255, 255}); // Left edge
+            // DrawRectangleGradientH(SCREEN_WIDTH - 50, 50, 50, SCREEN_HEIGHT-100, {135, 206, 255, 255}, RED); // Right edge
+            
+            // DrawRectangleGradientEx({0, 0, 50, 50}, RED,  RED,  {135, 206, 255, 255}, RED);
+            // DrawRectangleGradientEx({0, SCREEN_HEIGHT-50, 50, 50}, RED, RED, RED, {135, 206, 255, 255}); //Bottom left
+            // DrawRectangleGradientEx({SCREEN_WIDTH-50, 0, 50, 50},  RED, {135, 206, 255, 255}, RED, RED);
+            // DrawRectangleGradientEx({SCREEN_WIDTH-50, SCREEN_HEIGHT-50, 50, 50},  {135, 206, 255, 255}, RED,  RED, RED);
+
+            Color skyBlue = {135, 206, 255, 255};
+                
+                // Edges
+            if(myPlane.isCrashed) {
+                DrawRectangleGradientV(50, 0, SCREEN_WIDTH-100, 50, RED, skyBlue);
+                DrawRectangleGradientV(50, SCREEN_HEIGHT - 50, SCREEN_WIDTH-100, 50, skyBlue, RED);
+                DrawRectangleGradientH(0, 50, 50, SCREEN_HEIGHT-100, RED, skyBlue);
+                DrawRectangleGradientH(SCREEN_WIDTH - 50, 50, 50, SCREEN_HEIGHT-100, skyBlue, RED);
+                
+                // Corners
+                DrawRectangleGradientEx({0, 0, 50, 50}, RED, RED, skyBlue, RED);
+                DrawRectangleGradientEx({0, SCREEN_HEIGHT-50, 50, 50}, RED, RED, RED, skyBlue);
+                DrawRectangleGradientEx({SCREEN_WIDTH-50, 0, 50, 50}, RED, skyBlue, RED, RED);
+                DrawRectangleGradientEx({SCREEN_WIDTH-50, SCREEN_HEIGHT-50, 50, 50}, skyBlue, RED, RED, RED);
+            }
 
             std::string text = "Score: " + std::to_string(score);
 
@@ -742,9 +794,9 @@ void DrawGame()
 
 
             text = "shoot pew pew";
-            DrawRectangleRec((Rectangle){dest.x, dest.y, dest.width, dest.height}, RED);
+            // DrawRectangleRec((Rectangle){dest.x, dest.y, dest.width, dest.height}, RED);
             // DrawRectangleLines(dest.x - (dest.width/2), dest.y-(dest.height/2), dest.width, dest.height, RED);
-            DrawRectanglePro(dest, origin, -myPlane.planeAngle, GREEN);
+            // DrawRectanglePro(dest, origin, -myPlane.planeAngle, GREEN);
 
 
             if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
@@ -753,13 +805,16 @@ void DrawGame()
             {           
                 DrawTexturePro(textureFlip3, source, dest, origin, -myPlane.planeAngle, WHITE);
             }
+            if(myPlane.isCrashed) {
+                smokeInAir.emplace_back(SmokeParticle(myPlane.position, std::chrono::system_clock::now()));
+            }
             int x = 0;
 
             for(Plane& ep : enemyPlanes)
             {
-                DrawRectangleRec(planeImages[x], RED);
+                // DrawRectangleRec(planeImages[x], RED);
                 // DrawRectangleLines(planeImages[x].x - (planeImages[x].width/2), planeImages[x].y -(planeImages[x].height/2), planeImages[x].width, planeImages[x].height, RED);
-                DrawRectanglePro(planeImages[x], origin, -ep.planeAngle, GREEN);
+                // DrawRectanglePro(planeImages[x], origin, -ep.planeAngle, GREEN);
                 planeImages[x].x = ep.position.x;
                 planeImages[x].y = ep.position.y;
                 if(ep.planeAngle <= 90 || ep.planeAngle > 270) {
@@ -769,9 +824,13 @@ void DrawGame()
                 {           
                     DrawTexturePro(textureFlip3, source, planeImages[x], origin, -ep.planeAngle, PINK);
                 }
+                if(ep.isCrashed) {
+                    smokeInAir.emplace_back(SmokeParticle(ep.position, std::chrono::system_clock::now()));
+                }
                 x++;
                 text = std::to_string(static_cast<int>(ep.dur.count()));
             }
+
 
             DrawText(text.c_str(), 200, 20, 20, BLACK); 
             if (pause) DrawText("GAME PAUSED", SCREEN_WIDTH/2 - MeasureText("GAME PAUSED", 40)/2, SCREEN_HEIGHT/2 - 40, 40, GRAY);
@@ -785,12 +844,23 @@ void DrawGame()
                     int y = 0;
                     for(Plane& ep : enemyPlanes)
                     {
+                        if(CheckCollisionCircles(myPlane.position, myPlane.planeImage.height, ep.position, ep.planeImage.height)) {
+                            ep.isCrashed = true;
+                            myPlane.isCrashed = true;
+                            score++;
+                        }
                         if(CheckCollisionCircleRec(RotateCircle(bullet.position, ep.position, myPlane.planeAngle), 5.0, planeImages[y]) && (bullet.shotBy.index != ep.index))
                         {
                             ep.health--;
                             if(bullet.shotBy.him && !ep.isCrashed && ep.health <= 0)
                             {
-                                myPlane.health += 5;
+                                if(!myPlane.isCrashed) {
+                                    if(myPlane.health >=15){
+                                        myPlane.health = 20;
+                                    } else {
+                                        myPlane.health += 5;
+                                    }
+                                }
                                 score++;
                                 ep.isCrashed = true;
                             }
@@ -830,6 +900,46 @@ void DrawGame()
                     DrawCircleV(bullet.position, 3.0f, GRAY);
                     // DrawCircleV(RotateCircle(bullet.position, myPlane.position, myPlane.planeAngle), 3.0f, PINK);
                 }
+            }
+            
+            int spCount = 0;
+            for(SmokeParticle sp : smokeInAir) {
+                if(std::chrono::system_clock::now() - sp.start >= std::chrono::seconds(5)) {
+                    // std::time_t now_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+                    // std::tm now_tm = *std::localtime(&now_time_t);
+                    // std::cout << std::put_time(&now_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+                    // std::cout << "It worked tho" << '\n';
+                    // std::time_t now_time_t2 = std::chrono::system_clock::to_time_t(sp.start);
+                    // std::tm now_tm2 = *std::localtime(&now_time_t2);
+                    // std::cout << std::put_time(&now_tm2, "%Y-%m-%d %H:%M:%S") << std::endl;
+                    smokeInAir.erase(smokeInAir.begin() + spCount);
+                } else {
+                    // if(spCount != 0) {
+                    //     break;
+                    // }
+                    // std::time_t now_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+                    // std::tm now_tm = *std::localtime(&now_time_t);
+                    // std::cout << std::put_time(&now_tm, "%Y-%m-%d %H:%M:%S") << std::endl;
+                    // std::cout << "Break" << '\n';
+                    // std::time_t now_time_t2 = std::chrono::system_clock::to_time_t(sp.start);
+                    // std::tm now_tm2 = *std::localtime(&now_time_t2);
+                    // std::cout << std::put_time(&now_tm2, "%Y-%m-%d %H:%M:%S") << std::endl;
+
+                }
+                if(std::chrono::system_clock::now() - sp.start >= std::chrono::seconds(5)) {
+                    std::cout << "bigger than five ";
+                }
+
+                std::chrono::duration<float> duration = std::chrono::system_clock::now() - sp.start;
+                // float ouch = (std::chrono::system_clock::now() - sp.start).count();
+                float ouch = duration.count();
+                unsigned char transparent = 128.0f - (128.0f * (ouch / 5));
+                Color tempt = {105, 105, 105, transparent};
+                if(spCount == 0) {
+                    std::cout << ouch << '\n';
+                }
+                DrawCircle(sp.position.x, sp.position.y, 5, tempt);
+                spCount++;
             }
             //text = myPlane.dur;
             //text = "maybe";
