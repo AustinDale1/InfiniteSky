@@ -109,6 +109,7 @@ static std::vector<Bullet> bulletsInAir;
 static std::vector<SmokeParticle> smokeInAir;
 int counter = 0;
 int score = 0;
+int enemyPlaneCount = 1;
 
 
 static Plane planes[10] = {myPlane};
@@ -120,9 +121,6 @@ static void GetMovement();
 static void UpdatePlane(Plane& plane);
 static void UpdateEnemyPlane(Plane& plane);
 static void DrawGame();
-static Vector2 RotatePoint(Vector2& point, Vector2& center, float angle);
-static Rectangle RotateRectangle(Rectangle& rect, float angle);
-
 
 double DegToRad(double x)
 {
@@ -298,20 +296,7 @@ void GetMovement()
             myPlane.planeAngle += 3; 
         }
     }
-    // if(IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    // {
-        
-    //     if(!myPlane.isShooting)
-    //     {        
-    //         bulletCount = 0;
-    //         bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
-    //         bulletCount++;
-    //         myPlane.isShooting = true;
-    //         myPlane.start = std::chrono::system_clock::now();
-    //         myPlane.ct = std::chrono::system_clock::now();
-    //     }
-    //     std::cout << "count " << bulletCount <<'\n';
-    // }
+
     if(IsMouseButtonDown(MOUSE_LEFT_BUTTON))
     {
         // std::cout << "oy " << myPlane.dur.count() << '\n';
@@ -337,30 +322,12 @@ void GetMovement()
             myPlane.isShooting = false;
             myPlane.newEnd = std::chrono::system_clock::now();
             myPlane.init = true;
-            // std::cout << "Do we ever get here?";
         }
-        // std::cout << initialized << '\n';
         if(myPlane.dur <= std::chrono::seconds(5) && myPlane.init)
         {
-            // std::cout << "here? or here" ;
-            //std::string frickml = std::to_string((std::chrono::system_clock::now() - myPlane.newEnd).count());
-            // std::cout << "huh " << (std::chrono::system_clock::now() - myPlane.newEnd).count();
             myPlane.dur = myPlane.dur + (std::chrono::system_clock::now() - myPlane.newEnd);
         }  
     }
-    
-    // if(myPlane.isShooting && bulletCount < 5 && ((std::chrono::system_clock::now() - myPlane.ct) > std::chrono::milliseconds(50)))
-    // {
-    //     std::cout << "in alt" << '\n';
-    //     bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
-    //     myPlane.ct = std::chrono::system_clock::now();
-    //     bulletCount++;
-    // }
-    // myPlane.end = std::chrono::system_clock::now();
-    // if( (myPlane.end-myPlane.start) > std::chrono::seconds(2))
-    // {
-    //     myPlane.isShooting = false;
-    // }
 }
 
 
@@ -387,11 +354,11 @@ void UpdatePlane(Plane& plane)
         {
             if(plane.planeAngle != 270)
             {
-                plane.planeAngle++;
+                plane.planeAngle += .5;
             }
         } else
         {
-            plane.planeAngle --;
+            plane.planeAngle -= .5;
         }
         plane.position.x += (cosf(DegToRad(plane.planeAngle)) * plane.velocity.x);
         plane.position.y -= (sinf(DegToRad(plane.planeAngle)) * (plane.velocity.x));
@@ -489,15 +456,9 @@ void UpdateEnemyPlane(Plane& plane)
                 plane.isShooting = true;
             } else
             {
-                // if(bulletCount % 10 == 0)
-                // {
-                    // std::cout << "End" << '\n';
-                    bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));
-                    plane.newEnd = std::chrono::system_clock::now();
-                    // std::cout << "1 " << plane.dur.count() << '\n';
-                    plane.dur = plane.dur - (std::chrono::system_clock::now() - plane.newStart);
-                    // std::cout << "1 " << plane.dur.count() << '\n';
-                // }
+                bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));
+                plane.newEnd = std::chrono::system_clock::now();
+                plane.dur = plane.dur - (std::chrono::system_clock::now() - plane.newStart);
                 bulletCount++;
 
             }
@@ -521,131 +482,11 @@ void UpdateEnemyPlane(Plane& plane)
         }  
     }
 
-
-
-
-
-    // if(!plane.isShooting)
-    // {        
-    //     if(angle - plane.planeAngle <= 5 && angle - plane.planeAngle >= 0 && plane.dur > std::chrono::seconds(0))
-    //     {
-    //         myPlane.newStart = std::chrono::system_clock::now();
-    //         bulCount = 0;
-    //         bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));
-    //         bulCount++;
-    //         plane.isShooting = true;
-    //         plane.start = std::chrono::system_clock::now();
-    //         plane.ct = std::chrono::system_clock::now();
-    //     } else{
-    //         myPlane.newEnd = std::chrono::system_clock::now();
-    //     }
-    // }
-
-    // if(IsMouseButtonDown(MOUSE_LEFT_BUTTON))
-    // {
-    //     // std::cout << "oy " << myPlane.dur.count() << '\n';
-    //     if(myPlane.dur > std::chrono::seconds(0))
-    //     {
-    //         if(!myPlane.isShooting)
-    //         {
-    //             myPlane.newStart = std::chrono::system_clock::now();
-    //             bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
-    //             myPlane.isShooting = true;
-
-    //         } else
-    //         {
-    //             bulletsInAir.emplace_back(Bullet(myPlane.position, myPlane.planeAngle, myPlane));
-    //             myPlane.newEnd = std::chrono::system_clock::now();
-                
-    //             myPlane.dur = myPlane.dur - (std::chrono::system_clock::now() - myPlane.newStart);
-    //         }
-    //     }
-    // } else {
-    //     if(myPlane.isShooting)
-    //     {
-    //         myPlane.isShooting = false;
-    //         myPlane.newEnd = std::chrono::system_clock::now();
-    //         initialized = true;
-    //         // std::cout << "Do we ever get here?";
-    //     }
-    //     // std::cout << initialized << '\n';
-    //     if(myPlane.dur <= std::chrono::seconds(5) && initialized)
-    //     {
-    //         // std::cout << "here? or here" ;
-    //         //std::string frickml = std::to_string((std::chrono::system_clock::now() - myPlane.newEnd).count());
-    //         // std::cout << "huh " << (std::chrono::system_clock::now() - myPlane.newEnd).count();
-    //         myPlane.dur = myPlane.dur + (std::chrono::system_clock::now() - myPlane.newEnd);
-    //     }  
-    // }
-   
-    // if(plane.isShooting && bulCount < 5 && ((std::chrono::system_clock::now() - plane.ct) > std::chrono::milliseconds(50)))
-    // {
-    //     std::cout << "in alt" << '\n';
-    //     bulletsInAir.emplace_back(Bullet(plane.position, plane.planeAngle, plane));
-    //     plane.ct = std::chrono::system_clock::now();
-    //     bulCount++;
-    // }
-    // plane.end = std::chrono::system_clock::now();
-    // if( (plane.end-plane.start) > std::chrono::seconds(2))
-    // {
-    //     plane.isShooting = false;
-    // }
-
 }
 
 int counter2 = 0;
 
-Vector2 RotatePoint(Vector2& point, Vector2& center, float angle) {
-    // Convert angle to radians
-    float rad = angle * DEG2RAD;
-    
-    // Translate point to origin
-    float translatedX = point.x - center.x;
-    float translatedY = point.y - center.y;
-    
-    // Rotate point
-    float rotatedX = translatedX * cos(rad) - translatedY * sin(rad);
-    float rotatedY = translatedX * sin(rad) + translatedY * cos(rad);
-    
-    // Translate point back
-    return {
-        rotatedX + center.x, 
-        rotatedY + center.y
-    };
-}
 
-Rectangle RotateRectangle(Rectangle& rect, float angle) {
-    // Calculate rectangle center
-    Vector2 center = {
-        rect.x + rect.width / 2.0f, 
-        rect.y + rect.height / 2.0f
-    };
-    
-    // Define the four corners of the rectangle
-    Vector2 topLeft = {rect.x, rect.y};
-    Vector2 topRight = {rect.x + rect.width, rect.y};
-    Vector2 bottomRight = {rect.x + rect.width, rect.y + rect.height};
-    Vector2 bottomLeft = {rect.x, rect.y + rect.height};
-    
-    // Rotate each point around the center
-    topLeft = RotatePoint(topLeft, center, angle);
-    topRight = RotatePoint(topRight, center, angle);
-    bottomRight = RotatePoint(bottomRight, center, angle);
-    bottomLeft = RotatePoint(bottomLeft, center, angle);
-    
-    // Find new bounding box
-    float minX = std::min({topLeft.x, topRight.x, bottomRight.x, bottomLeft.x});
-    float maxX = std::max({topLeft.x, topRight.x, bottomRight.x, bottomLeft.x});
-    float minY = std::min({topLeft.y, topRight.y, bottomRight.y, bottomLeft.y});
-    float maxY = std::max({topLeft.y, topRight.y, bottomRight.y, bottomLeft.y});
-    
-    // Update rectangle
-    rect.x = minX;
-    rect.y = minY;
-    rect.width = maxX - minX;
-    rect.height = maxY - minY;
-    return rect;
-}
 
 Vector2 RotateCircle(Vector2 coords, Vector2 origin, float angle) {
     // Vector2 originPos = {
@@ -687,7 +528,6 @@ void DrawGame()
 
         ClearBackground(RAYWHITE);
 
-        // DrawText(TextFormat("CURRENT FPS: %i", (int)(1.0f/deltaTime)), GetScreenWidth() - 220, 40, 20, GREEN);
         Rectangle r = {
             200, 
             200,
@@ -695,11 +535,7 @@ void DrawGame()
             20
             };
             counterr++;
-            // RotateRectangle(r, 1);
-            //r.
-            // DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
-            // DrawRectangleRec(RotateRectangle(r, counterr), GREEN);
-            
+
         Rectangle source = {
             0.0f,
             0.0f,
@@ -714,13 +550,6 @@ void DrawGame()
             texture.width * .1f,
             texture.height * .1f
         };
-
-        // Rectangle dest2 = {
-        //     plane2.position.x, 
-        //     plane2.position.y,
-        //     texture.width * .1f,
-        //     texture.height * .1f
-        // };
 
 
         Vector2 origin = {
@@ -738,17 +567,6 @@ void DrawGame()
                 SCREEN_HEIGHT
             };
             Color semiTransparentRed = {255, 0, 0, 128};
-            // DrawRectangle(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, semiTransparentRed);
-
-            // DrawRectangleGradientV(50, 0, SCREEN_WIDTH-100, 50, RED, {135, 206, 255, 255}); // Top edge
-            // DrawRectangleGradientV(50, SCREEN_HEIGHT - 50, SCREEN_WIDTH-100, 50, {135, 206, 255, 255}, RED); // Bottom edge
-            // DrawRectangleGradientH(0, 50, 50, SCREEN_HEIGHT-100, RED, {135, 206, 255, 255}); // Left edge
-            // DrawRectangleGradientH(SCREEN_WIDTH - 50, 50, 50, SCREEN_HEIGHT-100, {135, 206, 255, 255}, RED); // Right edge
-            
-            // DrawRectangleGradientEx({0, 0, 50, 50}, RED,  RED,  {135, 206, 255, 255}, RED);
-            // DrawRectangleGradientEx({0, SCREEN_HEIGHT-50, 50, 50}, RED, RED, RED, {135, 206, 255, 255}); //Bottom left
-            // DrawRectangleGradientEx({SCREEN_WIDTH-50, 0, 50, 50},  RED, {135, 206, 255, 255}, RED, RED);
-            // DrawRectangleGradientEx({SCREEN_WIDTH-50, SCREEN_HEIGHT-50, 50, 50},  {135, 206, 255, 255}, RED,  RED, RED);
 
             Color skyBlue = {135, 206, 255, 255};
                 
@@ -769,6 +587,8 @@ void DrawGame()
             std::string text = "Score: " + std::to_string(score);
 
             DrawText(text.c_str(), 20, 20, 20, BLACK); 
+            DrawFPS(20, 60);
+
             
             text = "Health: " + std::to_string(myPlane.health);
             DrawText(text.c_str(), 1800, 20, 20, BLACK); 
@@ -782,12 +602,6 @@ void DrawGame()
                     text = "EnemyBullets: " + std::to_string(loopEP.dur.count());
                     DrawText(text.c_str(), 2000, 120, 20, BLACK); 
 
-                    // text = "newstart: " + std::to_string(plane2.newStart);
-                    // DrawText(text.c_str(), 2000, 220, 20, BLACK); 
-                    // text = "newend: " + std::to_string(plane2.newEnd);
-                    // DrawText(text.c_str(), 2000, 320, 20, BLACK); 
-                    // text = "now: " + std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::system_clock::now());
-                    // DrawText(text.c_str(), 2000, 420, 20, BLACK); 
                 }
             }
   
@@ -934,7 +748,7 @@ void DrawGame()
                 // float ouch = (std::chrono::system_clock::now() - sp.start).count();
                 float ouch = duration.count();
                 unsigned char transparent = 128.0f - (128.0f * (ouch / 5));
-                Color tempt = {105, 105, 105, transparent};
+                Color tempt = {28, 28, 28, transparent};
                 if(spCount == 0) {
                     std::cout << ouch << '\n';
                 }
@@ -948,19 +762,7 @@ void DrawGame()
         }
         else 
         {
-            // Rectangle r = {
-            // 200, 
-            // 200,
-            // 20,
-            // 20
-            // };
-            // counterr++;
-            // std::cout << "IT GOT HERE " << '\n';
-            // // RotateRectangle(r, 1);
-            // //r.
             DrawText("PRESS [ENTER] TO PLAY AGAIN", GetScreenWidth()/2 - MeasureText("PRESS [ENTER] TO PLAY AGAIN", 20)/2, GetScreenHeight()/2 - 50, 20, GRAY);
-            // DrawRectangleRec(RotateRectangle(r, counter), GREEN);
-
         }
     EndDrawing();
 }

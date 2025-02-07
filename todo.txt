@@ -1,14 +1,10 @@
 -Better movement system, variable speed?
 -Better enemy ai, dodging?
--Machine gun cooldown
 -Missiles, powerups, multiple planes?
 -Changing camera when you leave screen
--Fix bullet randomly appearing glitch
--Fix enter to play again
+-Add multiple planes, then up the enemy ai
 
 
 -Important bug fixes
--Machine gun cooldown sometimes breaks for enemy plane
--hitboxes
 
 -3D version?
