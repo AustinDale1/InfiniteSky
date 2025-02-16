@@ -8,3 +8,6 @@
 -Important bug fixes
 
 -3D version?
+
+
+( g++ -g main.cpp -o main.exe -I. -L. -lraylib -lopengl32 -lgdi32 -lwinmm -std=c++17   )

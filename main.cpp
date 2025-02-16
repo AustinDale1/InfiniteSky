@@ -110,6 +110,7 @@ static std::vector<SmokeParticle> smokeInAir;
 int counter = 0;
 int score = 0;
 int enemyPlaneCount = 1;
+bool isDetecting = false;
 
 
 static Plane planes[10] = {myPlane};
@@ -119,6 +120,7 @@ static void UpdateDrawFrame();
 static void UpdateGame();  
 static void GetMovement(); 
 static void UpdatePlane(Plane& plane);
+static bool DetectBullets(Plane& plane);
 static void UpdateEnemyPlane(Plane& plane);
 static void DrawGame();
 
@@ -262,7 +264,7 @@ void GetMovement()
         if (IsKeyDown(KEY_W)) 
         {
             if(myPlane.planeAngle == 90)
-                std::cout << "90" << '\n';
+                myPlane.planeAngle = myPlane.planeAngle;
             else if(myPlane.planeAngle < 90 || myPlane.planeAngle >= 270)
                 myPlane.planeAngle += 3;
             else
@@ -271,7 +273,7 @@ void GetMovement()
         if (IsKeyDown(KEY_A)) 
         {
             if(myPlane.planeAngle == 180)
-                std::cout << "180" << '\n';
+                myPlane.planeAngle = myPlane.planeAngle;
             else if(myPlane.planeAngle < 180)
                 myPlane.planeAngle += 3;
             else
@@ -280,7 +282,7 @@ void GetMovement()
         if (IsKeyDown(KEY_S)) 
         {
             if(myPlane.planeAngle == 270)
-                std::cout << "270" << '\n';
+                myPlane.planeAngle = myPlane.planeAngle;
             else if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
                 myPlane.planeAngle -= 3;
             else
@@ -289,7 +291,7 @@ void GetMovement()
         if (IsKeyDown(KEY_D)) 
         {
             if(myPlane.planeAngle == 0)
-                std::cout << "0" << '\n';
+                myPlane.planeAngle = myPlane.planeAngle;
             else if(myPlane.planeAngle <= 180)
                 myPlane.planeAngle -= 3;
             else
@@ -369,8 +371,58 @@ void UpdatePlane(Plane& plane)
 double angle = 0;
 double x = 1;
 int bulCount = 0;
+// bool DetectBullets(Plane& plane) {
+//         //     Vector2 position;        
+//         // double angle = 0.0f;
+//         // bool isDone = false;
+//         // Plane shotBy;
+
+//     int dangerCount = 0;
+//     for(Bullet& bullet : bulletsInAir) {
+//         // if((bullet.position.x - plane.position.x < 200 || bullet.position.x - plane.position.x > -200) && (bullet.position.y - plane.position.y < 200 || bullet.position.y - plane.position.y > -200)){
+//         //     continue;
+//         // }
+//         // if((bullet.position.x - plane.position.x > 1200 || bullet.position.x - plane.position.x < -1200) && (bullet.position.y - plane.position.y > 1200 || bullet.position.y - plane.position.y < -1200)){
+//         //     continue;
+//         // }
+//         // if(bullet.angle > 90 && bullet.angle < 270 && bullet.position.x < plane.position.x) {
+//         //     continue;
+//         // }
+//         // if(bullet.angle < 90 && bullet.angle > 270 && bullet.position.x > plane.position.x) {
+//         //     continue;
+//         // }
+        
+//         float bulletAngle = bullet.angle;  // your bullet's direction
+//         float dx = plane.position.x - bullet.position.x;
+//         float dy = bullet.position.y - plane.position.y;
+//         float angleToTarget = atan2(dy, dx) * 180.0f / PI;
+
+//         // Normalize both angles and adjust relative to bullet's direction
+//         float relativeAngle = angleToTarget - bulletAngle;
+//         if (relativeAngle < 0) relativeAngle += 360.0f;
+//         if(relativeAngle < 6 && relativeAngle > -6)
+//                 std::cout << "here " << relativeAngle << '\n';
+
+//         // Now check if it's within ±5 degrees of the bullet's path
+//         bool inCone = (relativeAngle >= 355 || relativeAngle <= 5);  // -5 and +5 relative to bullet
+//         if(!inCone) {
+//             continue;
+//         }
+
+//         dangerCount++;
+//         if(dangerCount >= 5) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
+
 void UpdateEnemyPlane(Plane& plane)
 {
+    // if(DetectBullets(plane)){
+    //     std::cout << "AHHHHHHHHHH";
+    //     plane.planeAngle -= 90;
+    // }
     if(plane.planeAngle >= 360)
     {
         plane.planeAngle = std::fmod(plane.planeAngle, 360);
@@ -417,6 +469,13 @@ void UpdateEnemyPlane(Plane& plane)
                 angle = 270;
             }
         }
+        // if(DetectBullets(plane)) {
+        //     isDetecting = true;
+        // }
+        // isDetecting = DetectBullets(plane);
+        // if(DetectBullets(plane)) {
+        //     plane.planeAngle -= 2;
+        // } else 
         if(angle > plane.planeAngle)
         {
             plane.planeAngle += 2;
@@ -468,12 +527,12 @@ void UpdateEnemyPlane(Plane& plane)
         if(plane.isShooting)
         {
             if(std::chrono::system_clock::now() - plane.newStart > std::chrono::seconds(1)) {
-                std::cout << "Do you stop shooting? " << '\n';
+                // std::cout << "Do you stop shooting? " << '\n';
                 plane.isShooting = false;
                 plane.newEnd = std::chrono::system_clock::now();
                 plane.init = true;
             } else {
-                std::cout << "Do you go here often" << '\n';
+                // std::cout << "Do you go here often" << '\n';
             }
         }
         if(plane.dur <= std::chrono::seconds(5) && plane.init)//This used to be if(plane.dur <= std::chrono::seconds(5) && initialized)??  dunno what that's about
@@ -611,8 +670,8 @@ void DrawGame()
             // DrawRectangleRec((Rectangle){dest.x, dest.y, dest.width, dest.height}, RED);
             // DrawRectangleLines(dest.x - (dest.width/2), dest.y-(dest.height/2), dest.width, dest.height, RED);
             // DrawRectanglePro(dest, origin, -myPlane.planeAngle, GREEN);
-
-
+            if(isDetecting)
+                DrawRectangle(200, 200, 1000, 200, RED);
             if(myPlane.planeAngle <= 90 || myPlane.planeAngle > 270)
                 DrawTexturePro(texture, source, dest, origin, -myPlane.planeAngle, WHITE);  // Draw a Texture2D with extended parameters
             else
@@ -741,7 +800,7 @@ void DrawGame()
 
                 }
                 if(std::chrono::system_clock::now() - sp.start >= std::chrono::seconds(5)) {
-                    std::cout << "bigger than five ";
+                    // std::cout << "bigger than five ";
                 }
 
                 std::chrono::duration<float> duration = std::chrono::system_clock::now() - sp.start;
@@ -750,7 +809,7 @@ void DrawGame()
                 unsigned char transparent = 128.0f - (128.0f * (ouch / 5));
                 Color tempt = {28, 28, 28, transparent};
                 if(spCount == 0) {
-                    std::cout << ouch << '\n';
+                    // std::cout << ouch << '\n';
                 }
                 DrawCircle(sp.position.x, sp.position.y, 5, tempt);
                 spCount++;
